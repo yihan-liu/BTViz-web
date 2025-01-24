@@ -115,6 +115,7 @@ export async function readCharacteristicValue(
  * @returns A number[] array of the bytes.
  */
 export function dataViewToArray(dataView: DataView): number[] {
+    // Option 1: Loop
     const array: number[] = [];
     for (let i = 0; i < dataView.byteLength; i++) {
         array.push(dataView.getUint8(i));
