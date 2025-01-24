@@ -4,6 +4,7 @@ import { useState } from 'react';
 export default function Home() {
   const [devices, setDevices] = useState("");
   const [errorMessage, setErrorMessage] = useState('');
+  const [isConnected, setIsConnected] = useState<boolean>(false);
 
   async function handleScan() {
     if (typeof navigator === 'undefined' || !navigator.bluetooth) {
@@ -19,7 +20,9 @@ export default function Home() {
       });
       console.log("Device:")
       console.log(device);
+      if(device != null){
 
+      }
       const server = await device.gatt?.connect()
       console.log("Server:")
       console.log(server);
@@ -51,6 +54,29 @@ export default function Home() {
     <div className="max-w-md w-full bg-white p-6 rounded-lg shadow-lg">
       <h2 className="text-3xl font-bold text-center mb-4">SpectraDerma Connection</h2>
 
+      <div className="text-center mb-4">
+          <p className="text-lg text-gray-700">
+            {devices ? `Connected to: ${devices}` : 'No device connected'}
+          </p>
+        </div>
+
+        <div className="text-center mb-6">
+          <span
+            className={`inline-block py-2 px-4 rounded-full text-white ${
+              isConnected ? 'bg-green-500' : 'bg-red-500'
+            }`}
+          >
+            {isConnected ? 'Connected' : 'Disconnected'}
+          </span>
+        </div>
+
+        <button
+          onClick={handleScan}
+          className="w-full py-2 px-4 rounded-lg bg-blue-500 text-white font-semibold hover:bg-blue-600 focus:outline-none"
+        >
+          {isConnected ? 'Reconnect' : 'Connect to SpectraDerma'}
+        </button>
+
     <div style={{ padding: 20 }}>
     
       <h1>Battery Level BLE Demo</h1>
@@ -59,6 +85,8 @@ export default function Home() {
       {errorMessage && (
         <p style={{ color: 'red' }}>Error: {errorMessage}</p>
       )}
+
+
       </div>
     </div>
     </div>
