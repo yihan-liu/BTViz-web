@@ -47,13 +47,21 @@ export default function Home() {
   }
 
   return (
+  <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-6">
+    <div className="max-w-md w-full bg-white p-6 rounded-lg shadow-lg">
+      <h2 className="text-3xl font-bold text-center mb-4">SpectraDerma Connection</h2>
+
     <div style={{ padding: 20 }}>
+    
       <h1>Battery Level BLE Demo</h1>
       <button onClick={handleScan}>Scan &amp; Get Battery Level</button>
 
       {errorMessage && (
         <p style={{ color: 'red' }}>Error: {errorMessage}</p>
       )}
+      </div>
     </div>
-  );
-}
+    </div>
+    );
+  }
+  
