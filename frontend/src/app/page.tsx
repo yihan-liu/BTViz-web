@@ -1,5 +1,6 @@
 "use client"
 import { useState } from 'react';
+import { Button } from "@/components/ui/button";
 
 export default function Home() {
   const [devices, setDevices] = useState("");
@@ -69,6 +70,10 @@ export default function Home() {
             {isConnected ? 'Connected' : 'Disconnected'}
           </span>
         </div>
+
+        <div>
+        <Button>Click me</Button>
+       </div>
 
         <button
           onClick={handleScan}
