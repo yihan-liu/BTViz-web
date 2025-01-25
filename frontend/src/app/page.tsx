@@ -1,6 +1,12 @@
 "use client"
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
+import { Card ,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,} from '@/components/ui/card';
 
 export default function Home() {
   const [devices, setDevices] = useState("");
@@ -51,17 +57,24 @@ export default function Home() {
   }
 
   return (
-  <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-6">
-    <div className="max-w-md w-full bg-white p-6 rounded-lg shadow-lg">
-      <h2 className="text-3xl font-bold text-center mb-4">SpectraDerma Connection</h2>
-
-      <div className="text-center mb-4">
+    <Card>
+      <CardHeader >
+        <CardTitle className="text-2xl">
+          SpectraDerma Connection
+        </CardTitle>
+        <CardDescription>
+          Connects to SpectraDerma via BLE 
+        </CardDescription>
+      </CardHeader>
+        
+      <CardContent>
+      <div>
           <p className="text-lg text-gray-700">
             {devices ? `Connected to: ${devices}` : 'No device connected'}
           </p>
         </div>
 
-        <div className="text-center mb-6">
+        <div>
           <span
             className={`inline-block py-2 px-4 rounded-full text-white ${
               isConnected ? 'bg-green-500' : 'bg-red-500'
@@ -71,30 +84,18 @@ export default function Home() {
           </span>
         </div>
 
-        <div>
-        <Button>Click me</Button>
-       </div>
+        <Button onClick={handleScan}
+        className="bg-blue-500 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-blue-600 focus:ring-2 focus:ring-blue-400"> 
+        {isConnected ? 'Reconnect' : 'Connect to SpectraDerma'}
+        </Button>
 
-        <button
-          onClick={handleScan}
-          className="w-full py-2 px-4 rounded-lg bg-blue-500 text-white font-semibold hover:bg-blue-600 focus:outline-none"
-        >
-          {isConnected ? 'Reconnect' : 'Connect to SpectraDerma'}
-        </button>
-
-    <div style={{ padding: 20 }}>
-    
-      <h1>Battery Level BLE Demo</h1>
-      <button onClick={handleScan}>Scan &amp; Get Battery Level</button>
-
+      </CardContent>
+      <CardFooter>
       {errorMessage && (
         <p style={{ color: 'red' }}>Error: {errorMessage}</p>
       )}
-
-
-      </div>
-    </div>
-    </div>
+      </CardFooter>
+    </Card>
     );
   }
   
