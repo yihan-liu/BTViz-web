@@ -8,6 +8,7 @@ import { Card ,
   CardHeader,
   CardTitle,} from '@/components/ui/card';
 
+
 export default function Home() {
   const [devices, setDevices] = useState("");
   const [errorMessage, setErrorMessage] = useState('');
@@ -22,8 +23,8 @@ export default function Home() {
     try {
       // Request a device that advertises the battery service
       const device = await navigator.bluetooth.requestDevice({
-        filters: [{name: "SpectraDerma"}],
-        optionalServices : [0xACEF]
+       filters: [{name: "SpectraDerma"}],
+       optionalServices : [0xACEF]
       });
       console.log("Device:")
       console.log(device);
@@ -57,20 +58,21 @@ export default function Home() {
   }
 
   return (
-    <Card>
+    <Card className="w-[400px] h-[800px] mx-auto">
       <CardHeader >
-        <CardTitle className="text-2xl">
+        <CardTitle style={{ fontSize: '30px' }}>
           SpectraDerma Connection
         </CardTitle>
-        <CardDescription>
-          Connects to SpectraDerma via BLE 
+        <CardDescription style={{ fontSize: '16px' }}>
+            <p>Connect to your device via BLE</p>
         </CardDescription>
       </CardHeader>
         
-      <CardContent>
+      <CardContent >
       <div>
-          <p className="text-lg text-gray-700">
-            {devices ? `Connected to: ${devices}` : 'No device connected'}
+          <p>Ensure that the device is powered on and in pairing mode</p>
+          <p className="flex justify-center text-lg text-gray-700">
+            {isConnected ? `Connected to: ${devices}` : 'No device connected'}
           </p>
         </div>
 
@@ -85,7 +87,7 @@ export default function Home() {
         </div>
 
         <Button onClick={handleScan}
-        className="bg-blue-500 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-blue-600 focus:ring-2 focus:ring-blue-400"> 
+        className="bg-black text-white py-2 px-6  border-2 border-black hover:text-black transition-all duration-300">
         {isConnected ? 'Reconnect' : 'Connect to SpectraDerma'}
         </Button>
 
