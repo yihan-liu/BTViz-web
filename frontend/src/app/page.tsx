@@ -23,8 +23,9 @@ export default function Home() {
     try {
       // Request a device that advertises the battery service
       const device = await navigator.bluetooth.requestDevice({
-       filters: [{name: "SpectraDerma"}],
-       optionalServices : [0xACEF]
+        filters: [
+          { name: 'SpectraDerma' } 
+        ]
       });
       console.log("Device:")
       console.log(device);
@@ -58,46 +59,53 @@ export default function Home() {
   }
 
   return (
-    <Card className="w-[400px] h-[800px] mx-auto">
-      <CardHeader >
-        <CardTitle style={{ fontSize: '30px' }}>
-          SpectraDerma Connection
-        </CardTitle>
-        <CardDescription style={{ fontSize: '16px' }}>
-            <p>Connect to your device via BLE</p>
-        </CardDescription>
-      </CardHeader>
+    
+    <div className='w-full h-screen flex flex-col items-center justify-center'>
+      <Card className="mx-auto">
+        <CardHeader >
+          <CardTitle style={{ fontSize: '30px' }}>
+              SpectraDerma Connection
+          </CardTitle>
+          <CardDescription style={{ fontSize: '16px' }}>
+              <p>Connect to your device via BLE</p>
+          </CardDescription>
+        </CardHeader>
         
-      <CardContent >
-      <div>
-          <p>Ensure that the device is powered on and in pairing mode</p>
-          <p className="flex justify-center text-lg text-gray-700">
-            {isConnected ? `Connected to: ${devices}` : 'No device connected'}
-          </p>
-        </div>
+        <CardContent className="flex-grow flex flex-col justify-between" >
+          <div>
+            <p>Ensure that the device is powered on and in pairing mode</p>
+            <p className="flex justify-center text-lg text-gray-700">
+              {isConnected ? `Connected to: ${"SpectraDerma"}` : 'No device connected'}
+            </p>
+          </div>
 
-        <div>
-          <span
-            className={`inline-block py-2 px-4 rounded-full text-white ${
-              isConnected ? 'bg-green-500' : 'bg-red-500'
-            }`}
-          >
-            {isConnected ? 'Connected' : 'Disconnected'}
-          </span>
-        </div>
+          <div className="flex justify-center mb-40">
+            <span
+              className={`inline-block flex justify-center py-2 px-4 rounded-full text-white ${
+                isConnected ? 'bg-green-500' : 'bg-red-500'
+              }`}
+               >
+                {isConnected ? 'Connected' : 'Disconnected'}
+            </span>
+           </div>
 
-        <Button onClick={handleScan}
-        className="bg-black text-white py-2 px-6  border-2 border-black hover:text-black transition-all duration-300">
-        {isConnected ? 'Reconnect' : 'Connect to SpectraDerma'}
-        </Button>
+          <div>
+              {errorMessage && (
+                 <p style={{ color: 'red' }}>Error: {errorMessage}</p>
+              )}
+          </div>
+        </CardContent>
 
-      </CardContent>
-      <CardFooter>
-      {errorMessage && (
-        <p style={{ color: 'red' }}>Error: {errorMessage}</p>
-      )}
-      </CardFooter>
-    </Card>
+         <CardFooter className= "flex justify-center">
+          <div>
+            <Button onClick={handleScan}
+              className="bg-black text-white py-2 px-6  border-2 border-black hover:text-black transition-all duration-300">
+                {isConnected ? 'Reconnect' : 'Connect to SpectraDerma'}
+            </Button>
+          </div>       
+        </CardFooter>
+      </Card>
+    </div>
     );
   }
   
