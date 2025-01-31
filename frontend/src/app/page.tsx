@@ -19,8 +19,6 @@ export default function Home() {
   // BASE URL FOR WHICH API CALLS ARE TO BE MADE
   const baseURL: string = "localhost:3000"
 
-
-
   // STATE HOOKS
   const [device, setDevice] = useState("");
   const [errorMessage, setErrorMessage] = useState<string>("");
@@ -31,6 +29,7 @@ export default function Home() {
     console.log(characteristic);
     try {
       const value = await readCharacteristicValue(characteristic);
+      console.log(value);
       handleNewSensorData(value);
     } catch (error) {
       setErrorMessage(error.message);
