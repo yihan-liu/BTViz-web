@@ -11,13 +11,17 @@ import { Card ,
 import { connectToDevice, dataViewToArray, readCharacteristicValue } from './utils/BLEfunctions';
 
 export default function Home() {
-
   // global consts do not touch
   const deviceName: string = "SpectraDerma"
   const optionalServiceUUID: number = 0xACEF
   const optionalCharacteristicUUID: number = 0xFF01
-  
-  // 
+
+  // BASE URL FOR WHICH API CALLS ARE TO BE MADE
+  const baseURL: string = "localhost:3000"
+
+
+
+  // STATE HOOKS
   const [device, setDevice] = useState("");
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [isConnected, setIsConnected] = useState<boolean>(false);
@@ -27,14 +31,34 @@ export default function Home() {
     console.log(characteristic);
     try {
       const value = await readCharacteristicValue(characteristic);
+      handleNewSensorData(value);
     } catch (error) {
       setErrorMessage(error.message);
     }
-    
-    console.log(value)
-    const arr = dataViewToArray(value)
-    console.log(arr);
   }
+
+  // SENSOR DATA BUFFER
+  let sensorDataBuffer: number[] = []
+
+  // called everytime we get new sensor data 
+  function handleNewSensorData(data: number) {
+    sensorDataBuffer.push(data);
+    if (sensorDataBuffer.length >= 100) {
+      sendBatchToServer();
+    }
+  }
+
+  function sendBatchToServer() {
+    // send the data to the server - link is broken.
+    fetch('/api/upload', {
+      method: 'POST',
+      body: JSON.stringify({ data: sensorDataBuffer }),
+      headers: { 'Content-Type': 'application/json' }
+    });
+    sensorDataBuffer = [];
+  }
+
+
 
   return (
     
