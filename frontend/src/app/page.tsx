@@ -8,55 +8,57 @@ import { Card ,
   CardHeader,
   CardTitle,} from '@/components/ui/card';
   import Link from "next/link";
+import { connectToDevice, dataViewToArray, readCharacteristicValue } from './utils/BLEfunctions';
 
 export default function Home() {
-  const [devices, setDevices] = useState("");
-  const [errorMessage, setErrorMessage] = useState('');
+  // global consts do not touch
+  const deviceName: string = "SpectraDerma"
+  const optionalServiceUUID: number = 0xACEF
+  const optionalCharacteristicUUID: number = 0xFF01
+
+  // BASE URL FOR WHICH API CALLS ARE TO BE MADE
+  const baseURL: string = "localhost:3000"
+
+
+
+  // STATE HOOKS
+  const [device, setDevice] = useState("");
+  const [errorMessage, setErrorMessage] = useState<string>("");
   const [isConnected, setIsConnected] = useState<boolean>(false);
-
+  
   async function handleScan() {
-    if (typeof navigator === 'undefined' || !navigator.bluetooth) {
-      setErrorMessage('Web Bluetooth is not supported in this browser/environment.');
-      return;
-    }
-    
+    const characteristic = await connectToDevice(deviceName, optionalServiceUUID, optionalCharacteristicUUID);
+    console.log(characteristic);
     try {
-      // Request a device that advertises the battery service
-      const device = await navigator.bluetooth.requestDevice({
-        filters: [
-          { name: 'SpectraDerma' } 
-        ]
-      });
-      console.log("Device:")
-      console.log(device);
-      if(device != null){
-
-      }
-      const server = await device.gatt?.connect()
-      console.log("Server:")
-      console.log(server);
-
-      // Connect to GATT server
-
-      // Get the battery service
-      const service = await server.getPrimaryServices();
-      console.log("Service:");
-      console.log(service);
-
-      // Get the battery level characteristic
-      const characteristic = await service[0].getCharacteristic(0xFF01);
-      console.log("characteristic:");
-      console.log(characteristic);
-      // Read the current battery level
-      const value = await characteristic.readValue();
-
-      console.log("value")
-      console.log(value)
-      
+      const value = await readCharacteristicValue(characteristic);
+      handleNewSensorData(value);
     } catch (error) {
-      setErrorMessage(error.toString());
+      setErrorMessage(error.message);
     }
   }
+
+  // SENSOR DATA BUFFER
+  let sensorDataBuffer: number[] = []
+
+  // called everytime we get new sensor data 
+  function handleNewSensorData(data: number) {
+    sensorDataBuffer.push(data);
+    if (sensorDataBuffer.length >= 100) {
+      sendBatchToServer();
+    }
+  }
+
+  function sendBatchToServer() {
+    // send the data to the server - link is broken.
+    fetch('/api/upload', {
+      method: 'POST',
+      body: JSON.stringify({ data: sensorDataBuffer }),
+      headers: { 'Content-Type': 'application/json' }
+    });
+    sensorDataBuffer = [];
+  }
+
+
 
   return (
     
