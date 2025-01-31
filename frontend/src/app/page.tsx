@@ -7,7 +7,7 @@ import { Card ,
   CardFooter,
   CardHeader,
   CardTitle,} from '@/components/ui/card';
-
+  import Link from "next/link";
 
 export default function Home() {
   const [devices, setDevices] = useState("");
@@ -61,6 +61,9 @@ export default function Home() {
   return (
     
     <div className='w-full h-screen flex flex-col items-center justify-center'>
+            <div>
+                <Link href="/data"> </Link>
+      `     </div>
       <Card className="mx-auto">
         <CardHeader >
           <CardTitle style={{ fontSize: '30px' }}>
@@ -88,7 +91,6 @@ export default function Home() {
                 {isConnected ? 'Connected' : 'Disconnected'}
             </span>
            </div>
-
           <div>
               {errorMessage && (
                  <p style={{ color: 'red' }}>Error: {errorMessage}</p>
