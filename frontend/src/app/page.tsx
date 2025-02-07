@@ -9,6 +9,7 @@ import { Card ,
   CardTitle,} from '@/components/ui/card';
   import Link from "next/link";
 import { connectToDevice, dataViewToArray, readCharacteristicValue } from './utils/BLEfunctions';
+import { set } from 'date-fns';
 
 export default function Home() {
   // global consts do not touch
@@ -29,6 +30,10 @@ export default function Home() {
   async function handleScan() {
     const characteristic = await connectToDevice(deviceName, optionalServiceUUID, optionalCharacteristicUUID);
     console.log(characteristic);
+    if(characteristic){
+      setIsConnected(true);
+    }
+
     try {
       const value = await readCharacteristicValue(characteristic);
       handleNewSensorData(value);
@@ -61,7 +66,6 @@ export default function Home() {
 
 
   return (
-    
     <div className='w-full h-screen flex flex-col items-center justify-center'>
             <div>
                 <Link href="/data"> </Link>
