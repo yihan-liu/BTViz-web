@@ -95,16 +95,21 @@ export async function getCharacteristic(
  */
 export async function readCharacteristicValue(
     characteristic: BluetoothRemoteGATTCharacteristic
-): Promise<DataView> {
+): Promise<BluetoothRemoteGATTCharacteristic> {
     if (!characteristic) {
         throw new Error("No characteristic provided.");
     }
 
     try {
-        const value = await characteristic.readValue();
-        return value;
-    } catch (error: any) {
-        throw new Error(`Failed to read characteristic value: ${error.message}`);
+        // Start notifications and wait for the promise to resolve.
+        const notifiedCharacteristic = await characteristic.startNotifications();
+        console.log("Notifications Started!");
+
+        // Add an event listener to log each notification as it arrives.
+        return notifiedCharacteristic;
+    } catch (error) {
+        console.error("Error starting notifications:", error);
+        throw error;
     }
 }
 
