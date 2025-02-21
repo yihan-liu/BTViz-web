@@ -7,7 +7,8 @@ import { Card ,
   CardFooter,
   CardHeader,
   CardTitle,} from '@/components/ui/card';
-  import Link from "next/link";import { toast } from 'sonner';
+  import Link from "next/link";
+  import { toast } from 'sonner';
 
 import { connectToDevice, dataViewToArray, readCharacteristicValue } from './utils/BLEfunctions';
 import { set } from 'date-fns';

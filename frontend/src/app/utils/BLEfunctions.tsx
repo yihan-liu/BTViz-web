@@ -80,6 +80,11 @@ export async function getCharacteristic(
         throw new Error("No GATT service provided.");
     }
 
+    const device = characteristic.service?.device;
+    if (!device || !device.gatt.connected) {
+        throw new Error("Device is not connected.");
+    }
+
     try {
         const characteristic = await service.getCharacteristic(characteristicUUID);
         return characteristic;
