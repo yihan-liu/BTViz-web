@@ -58,7 +58,7 @@ export default function Home() {
       setIsConnected(true);
     } catch (error) {
       setErrorMessage(error.message);
-      toast.error(errorMessage);
+      toast.error(error.message);
     }
   }
 
