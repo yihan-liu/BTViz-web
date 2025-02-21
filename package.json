@@ -1,5 +1,7 @@
 {
   "dependencies": {
-    "@shadcn/ui": "^0.0.4"
+    "@shadcn/ui": "^0.0.4",
+    "chart.js": "^3.9.1",
+    "react-chartjs-2": "^3.0.3"
   }
 }

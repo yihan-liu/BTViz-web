@@ -7,9 +7,10 @@ import { Card ,
   CardFooter,
   CardHeader,
   CardTitle,} from '@/components/ui/card';
-import { toast } from 'sonner';
+  import Link from "next/link";import { toast } from 'sonner';
 
 import { connectToDevice, dataViewToArray, readCharacteristicValue } from './utils/BLEfunctions';
+import { set } from 'date-fns';
 import { collection, addDoc } from "firebase/firestore"
 import { db } from './utils/firebaseConfig';
 
@@ -37,6 +38,10 @@ export default function Home() {
   async function handleScan() {
     const characteristic = await connectToDevice(deviceName, optionalServiceUUID, optionalCharacteristicUUID);
     console.log(characteristic);
+    if(characteristic){
+      setIsConnected(true);
+    }
+
     try {
       const notifications = await readCharacteristicValue(characteristic);
       notifications.addEventListener("characteristicvaluechanged", event => {
@@ -93,6 +98,9 @@ export default function Home() {
   }, 5000);
   return (
     <div className='w-full h-screen flex flex-col items-center justify-center'>
+            <div>
+                <Link href="/data"> </Link>
+      `     </div>
       <Card className="mx-auto">
         <CardHeader >
           <CardTitle style={{ fontSize: '30px' }}>
@@ -120,7 +128,6 @@ export default function Home() {
                 {isConnected ? 'Connected' : 'Disconnected'}
             </span>
            </div>
-
           <div>
           </div>
         </CardContent>
