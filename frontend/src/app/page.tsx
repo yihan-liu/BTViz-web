@@ -39,9 +39,7 @@ export default function Home() {
   async function handleScan() {
     const characteristic = await connectToDevice(deviceName, optionalServiceUUID, optionalCharacteristicUUID);
     console.log(characteristic);
-    if(characteristic){
-      setIsConnected(true);
-    }
+    
 
     try {
       const notifications = await readCharacteristicValue(characteristic);
@@ -57,6 +55,7 @@ export default function Home() {
         notificationBuffer.push({ timestamp, data });
         // console.log(`Buffered notification at ${new Date(timestamp).toISOString()}:`, data);
       });
+      setIsConnected(true);
     } catch (error) {
       setErrorMessage(error.message);
       toast.error(errorMessage);
