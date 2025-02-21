@@ -59,7 +59,7 @@ export default function Home() {
       });
     } catch (error) {
       setErrorMessage(error.message);
-      toast.error(errorMessage);
+      toast.error(error.message);
     }
   }
 
