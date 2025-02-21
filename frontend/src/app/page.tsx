@@ -134,7 +134,7 @@ export default function Home() {
 
          <CardFooter className= "flex justify-center">
           <div>
-            <Button onClick={handleScan}
+            <Button onClick={handleScan} disabled={isConnected}
               className="bg-black text-white py-2 px-6  border-2 border-black hover:text-black transition-all duration-300">
                 {isConnected ? 'Reconnect' : 'Connect to SpectraDerma'}
             </Button>
