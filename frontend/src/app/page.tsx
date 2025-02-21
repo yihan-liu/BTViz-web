@@ -7,6 +7,7 @@ import { Card ,
   CardFooter,
   CardHeader,
   CardTitle,} from '@/components/ui/card';
+import { toast } from 'sonner';
 
 import { connectToDevice, dataViewToArray, readCharacteristicValue } from './utils/BLEfunctions';
 import { collection, addDoc } from "firebase/firestore"
@@ -52,7 +53,9 @@ export default function Home() {
       });
 
     } catch (error) {
+      
       setErrorMessage(error.message);
+      toast.error(errorMessage);
     }
   }
 
@@ -124,9 +127,6 @@ export default function Home() {
            </div>
 
           <div>
-              {errorMessage && (
-                 <p style={{ color: 'red' }}>Error: {errorMessage}</p>
-              )}
           </div>
         </CardContent>
 

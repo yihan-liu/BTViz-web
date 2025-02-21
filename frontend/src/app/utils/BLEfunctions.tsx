@@ -100,8 +100,14 @@ export async function readCharacteristicValue(
         throw new Error("No characteristic provided.");
     }
 
+    const device = characteristic.service?.device;
+    if (!device || !device.gatt.connected) {
+        throw new Error("Device is not connected.");
+    }
+
     try {
         // Start notifications and wait for the promise to resolve.
+
         const notifiedCharacteristic = await characteristic.startNotifications();
         console.log("Notifications Started!");
 
