@@ -51,9 +51,7 @@ export default function Home() {
         notificationBuffer.push({ timestamp, data });
         // console.log(`Buffered notification at ${new Date(timestamp).toISOString()}:`, data);
       });
-
     } catch (error) {
-      
       setErrorMessage(error.message);
       toast.error(errorMessage);
     }
@@ -93,10 +91,7 @@ export default function Home() {
       notificationBuffer.length = 0;
     }
   }, 5000);
-
-
   return (
-    
     <div className='w-full h-screen flex flex-col items-center justify-center'>
       <Card className="mx-auto">
         <CardHeader >
