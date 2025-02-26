@@ -46,14 +46,15 @@ export default function Home() {
       notifications.addEventListener("characteristicvaluechanged", event => {
         const value = (event.target as BluetoothRemoteGATTCharacteristic).value;
         if (!value) return;
-        // Convert the DataView to a hex string for logging.
-        let data: number[] = [];
-        for (let i = 0; i < value.byteLength; i++) {
-          data.push(value.getUint8(i));
-        }
+        // Convert the DataView to a string for logging.
+        const decoder = new TextDecoder("utf-8");
+        const dataString = decoder.decode(value);
+        // Splits String into Array of 12 channels
+        const data = dataString.split(",").map(num => parseInt(num,10));
+       
         const timestamp = Date.now()
         notificationBuffer.push({ timestamp, data });
-        // console.log(`Buffered notification at ${new Date(timestamp).toISOString()}:`, data);
+        console.log(`Buffered notification at ${new Date(timestamp).toISOString()}:`, data);
       });
       setIsConnected(true);
     } catch (error) {
