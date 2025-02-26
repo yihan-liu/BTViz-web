@@ -54,7 +54,7 @@ export default function Home() {
        
         const timestamp = Date.now()
         notificationBuffer.push({ timestamp, data });
-        console.log(`Buffered notification at ${new Date(timestamp).toISOString()}:`, data);
+        // console.log(`Buffered notification at ${new Date(timestamp).toISOString()}:`, data);
       });
       setIsConnected(true);
     } catch (error) {
