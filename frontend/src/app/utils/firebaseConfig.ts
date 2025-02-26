@@ -8,11 +8,12 @@ import { getFirestore } from "firebase/firestore"
 const firebaseConfig = {
     apiKey: "AIzaSyADLifqRUNWLWzpbopFAM7eIPYdrHmqO68",
     authDomain: "spectraderma.firebaseapp.com",
+    databaseURL: "https://spectraderma-default-rtdb.firebaseio.com",
     projectId: "spectraderma",
     storageBucket: "spectraderma.firebasestorage.app",
     messagingSenderId: "238839191127",
-    appId: "1:238839191127:web:7d8e14ee0096a76434b512",
-    measurementId: "G-5VJNR9DXEZ"
+    appId: "1:238839191127:web:50c2e7350963ba3934b512",
+    measurementId: "G-81K75LWZCD"
 };
 
 // Initialize Firebase
