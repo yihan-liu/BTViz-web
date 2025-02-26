@@ -12,7 +12,7 @@ import { Card ,
 
 import { connectToDevice, dataViewToArray, readCharacteristicValue } from './utils/BLEfunctions';
 import { set } from 'date-fns';
-import { collection, addDoc } from "firebase/firestore"
+import { collection, addDoc, setDoc, doc } from "firebase/firestore"
 import { db } from './utils/firebaseConfig';
 
 export default function Home() {
@@ -71,7 +71,11 @@ export default function Home() {
   };
 
   try {
-    const docRef = await addDoc(collection(db, "spectradermadata"), batchData);
+    const currentDate = new Date().toISOString();
+
+    const docRef = doc(db, "spectradermadata", currentDate);
+    await setDoc(docRef, batchData);
+    
     console.log("Batch data sent to Firebase with ID:", docRef.id);
   } catch (error) {
     console.error("Error sending data to Firebase:", error);
