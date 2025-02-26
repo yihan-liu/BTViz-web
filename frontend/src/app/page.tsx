@@ -28,7 +28,7 @@ export default function Home() {
   const [device, setDevice] = useState("");
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [isConnected, setIsConnected] = useState<boolean>(false);
-  
+  const [timeConnected, setTimeConnected] = useState<Date>(new Date());
 
   interface NotificationEntry {
     timestamp: Date;
@@ -37,11 +37,14 @@ export default function Home() {
   const notificationBuffer: NotificationEntry[] = [];
 
   async function handleScan() {
+
     const characteristic = await connectToDevice(deviceName, optionalServiceUUID, optionalCharacteristicUUID);
     console.log(characteristic);
     
 
     try {
+      setTimeConnected(new Date());
+      setIsConnected(true);
       const notifications = await readCharacteristicValue(characteristic);
       notifications.addEventListener("characteristicvaluechanged", event => {
         const value = (event.target as BluetoothRemoteGATTCharacteristic).value;
@@ -52,11 +55,12 @@ export default function Home() {
         // Splits String into Array of 12 channels
         const data = dataString.split(",").map(num => parseInt(num,10));
        
-        const timestamp = Date.now()
+        const timestamp = Date.now() - timeConnected.getTime();
         notificationBuffer.push({ timestamp, data });
         // console.log(`Buffered notification at ${new Date(timestamp).toISOString()}:`, data);
       });
-      setIsConnected(true);
+      
+      
     } catch (error) {
       setErrorMessage(error.message);
       toast.error(error.message);
