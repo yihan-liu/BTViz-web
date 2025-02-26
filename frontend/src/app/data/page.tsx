@@ -38,6 +38,7 @@ export default function DataPage() {
     setChartKey((prev) => prev + 1);
   }, []);
 
+  
 
   const chartColors = [
     "rgb(148, 0, 211)",  // 400 nm (Violet)
