@@ -28,7 +28,7 @@ export default function Home() {
   const [device, setDevice] = useState("");
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [isConnected, setIsConnected] = useState<boolean>(false);
-  const [timeConnected, setTimeConnected] = useState<Date>(new Date());
+  const [timeConnected, setTimeConnected] = useState<Date>();
 
   interface NotificationEntry {
     timestamp: Date;
@@ -43,7 +43,7 @@ export default function Home() {
     
 
     try {
-      setTimeConnected(new Date());
+      const connectionTime = new Date();
       setIsConnected(true);
       const notifications = await readCharacteristicValue(characteristic);
       notifications.addEventListener("characteristicvaluechanged", event => {
@@ -55,7 +55,7 @@ export default function Home() {
         // Splits String into Array of 12 channels
         const data = dataString.split(",").map(num => parseInt(num,10));
        
-        const timestamp = Date.now() - timeConnected.getTime();
+        const timestamp = Date.now() - connectionTime.getTime();
         notificationBuffer.push({ timestamp, data });
         // console.log(`Buffered notification at ${new Date(timestamp).toISOString()}:`, data);
       });
