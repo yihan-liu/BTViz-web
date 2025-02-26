@@ -104,7 +104,7 @@ export default function Home() {
       // Clear the buffer
       notificationBuffer.length = 0;
     }
-  }, 5000);
+  }, 500);
   return (
     <div className='w-full h-screen flex flex-col items-center justify-center'>
             <div>
