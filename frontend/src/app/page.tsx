@@ -14,6 +14,7 @@ import { connectToDevice, dataViewToArray, readCharacteristicValue } from './uti
 import { set } from 'date-fns';
 import { collection, addDoc, setDoc, doc } from "firebase/firestore"
 import { db } from './utils/firebaseConfig';
+import { HealthChart } from './utils/HealthChart';
 
 export default function Home() {
   // global consts do not touch
@@ -104,7 +105,7 @@ export default function Home() {
       // Clear the buffer
       notificationBuffer.length = 0;
     }
-  }, 500);
+  }, 1000);
   return (
     <div className='w-full h-screen flex flex-col items-center justify-center'>
             <div>
@@ -137,6 +138,7 @@ export default function Home() {
                 {isConnected ? 'Connected' : 'Disconnected'}
             </span>
            </div>
+           <HealthChart />
           <div>
           </div>
         </CardContent>
