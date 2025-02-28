@@ -1,5 +1,5 @@
 "use client"
-import { useState } from 'react';
+import { useState} from 'react';
 import { Button } from "@/components/ui/button";
 import { Card ,
   CardContent,
@@ -25,7 +25,7 @@ export default function Home() {
   const baseURL: string = "localhost:3000"
 
   // STATE HOOKS
-  const [device, setDevice] = useState("");
+  const [device, setDevice] = useState<BluetoothDevice | null>(null);
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [isConnected, setIsConnected] = useState<boolean>(false);
   const [timeConnected, setTimeConnected] = useState<Date>();
@@ -41,6 +41,24 @@ export default function Home() {
     const characteristic = await connectToDevice(deviceName, optionalServiceUUID, optionalCharacteristicUUID);
     console.log(characteristic);
     
+    //Checks if device is still connected or not connected
+    try{
+    const bluetoothDevice = characteristic.service.device;
+    setDevice(bluetoothDevice);
+
+    if (bluetoothDevice.gatt && bluetoothDevice.gatt.connected) {
+      setIsConnected(true);
+    } else{
+      setIsConnected(false);
+    }
+  
+    bluetoothDevice.addEventListener("gattserverdisconnected", ()=>{
+      setIsConnected(false);
+      setDevice(null);
+    } )
+  } catch (error) {
+    setErrorMessage(error.message);
+  }
 
     try {
       const connectionTime = new Date();
@@ -49,7 +67,7 @@ export default function Home() {
       notifications.addEventListener("characteristicvaluechanged", event => {
         const value = (event.target as BluetoothRemoteGATTCharacteristic).value;
         if (!value) return;
-        setIsConnected(true);
+        
         // Convert the DataView to a string for logging.
         const decoder = new TextDecoder("utf-8");
         const dataString = decoder.decode(value);
@@ -106,6 +124,7 @@ export default function Home() {
       notificationBuffer.length = 0;
     }
   }, 500);
+  
   return (
     <div className='w-full h-screen flex flex-col items-center justify-center'>
             <div>
