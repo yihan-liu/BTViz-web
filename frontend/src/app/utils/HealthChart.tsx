@@ -37,13 +37,9 @@ const chartConfig = channelColors.reduce((config, color, index) => {
         label: `Channel ${index}`,
         // icon: Monitor,
         color: color,
-        theme: {
-            light: color,
-            dark: color, // Optionally adjust for dark mode
-        },
     };
     return config;
-}, {} as Record<string, { label: string; color: string; theme: { light: string; dark: string } }>) satisfies ChartConfig;
+}, {} as ChartConfig);
 
 // Transform the sensor data into a format compatible with Recharts:
 // Each object will have a timestamp and keys like "channel0", "channel1", … "channel11"
@@ -60,47 +56,43 @@ function transformSensorData(data: SensorData[]) {
 }
 export function HealthChart({ data }: SensorChartProps) {
 
-    const sampleSensorData: SensorData[] = [
-        {
-            timestamp: Date.now(),
-            values: [100, 120, 90, 110, 105, 95, 130, 125, 115, 100, 90, 85],
-        },
-        {
-            timestamp: Date.now() + 60000, // one minute later
-            values: [105, 125, 95, 115, 110, 100, 135, 130, 120, 105, 95, 90],
-        },
-        {
-            timestamp: Date.now() + 120000, // two minutes later
-            values: [110, 130, 100, 120, 115, 105, 140, 135, 125, 110, 100, 95],
-        },
-    ];
+    
+    const chartData = transformSensorData(data);
 
     // The data prop should be an array of 12 objects, one for each month.
     return (
-        <ChartContainer config={chartConfig}>
+        <ChartContainer config={chartConfig} className="min-h-[100px]">
             <AreaChart
                 accessibilityLayer
-                data={sampleSensorData}
+                data={chartData}
                 margin={{
                     left: 12,
                     right: 12,
                 }}
             >
                 <CartesianGrid vertical={false} />
-                <XAxis
-                    dataKey="month"
+                {/* <XAxis
+                    dataKey="timestamp"
                     tickLine={false}
                     axisLine={false}
                     tickMargin={1}
-                    tickFormatter={(value) => value.slice(0, 3)}
-                />
-                <Area
-                    dataKey="desktop"
-                    type="linear"
-                    fill="var(--color-desktop)"
-                    fillOpacity={0.2}
-                    stroke="var(--color-desktop)"
-                />
+                    tickFormatter={(timestamp) =>
+                        new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                    }
+                /> */}
+                {channelColors.map((color, index) => {
+                    const channelKey = `channel${index}`;
+                    return (
+                        <Area
+                            key={channelKey}
+                            dataKey={channelKey}
+                            type="natural"
+                            fill={chartConfig[channelKey].color}
+                            fillOpacity={0.0}
+                            stroke={chartConfig[channelKey].color}
+                        />
+                    );
+                })}
             </AreaChart>
         </ChartContainer>
     );

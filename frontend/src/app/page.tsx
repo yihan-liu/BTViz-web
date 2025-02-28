@@ -15,6 +15,7 @@ import { set } from 'date-fns';
 import { collection, addDoc, setDoc, doc } from "firebase/firestore"
 import { db } from './utils/firebaseConfig';
 import { HealthChart } from './utils/HealthChart';
+import { Eye, EyeOff } from 'lucide-react';
 
 export default function Home() {
   // global consts do not touch
@@ -30,7 +31,9 @@ export default function Home() {
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [isConnected, setIsConnected] = useState<boolean>(false);
   const [timeConnected, setTimeConnected] = useState<Date>();
-
+  const [sensorData, setSensorData] = useState<{ timestamp: number; values: number[] }[]>([]);
+  const [showChart, setShowChart] = useState<boolean>(true);
+  const MAX_CHART_BUFFER_SIZE = 500;
   interface NotificationEntry {
     timestamp: Date;
     data: number[];
@@ -57,6 +60,16 @@ export default function Home() {
         const data = dataString.split(",").map(num => parseInt(num,10));
        
         const timestamp = Date.now() - connectionTime.getTime();
+
+        setSensorData(prevData => {
+          const newData = [...prevData, { timestamp, values: data }];
+          // Keep only the most recent MAX_POINTS entries
+          if (newData.length > MAX_CHART_BUFFER_SIZE) {
+            return newData.slice(newData.length - MAX_CHART_BUFFER_SIZE);
+          }
+          return newData;
+        });
+
         notificationBuffer.push({ timestamp, data });
         // console.log(`Buffered notification at ${new Date(timestamp).toISOString()}:`, data);
       });
@@ -126,10 +139,11 @@ export default function Home() {
             <p>Ensure that the device is powered on and in pairing mode</p>
             <p className="flex justify-center text-lg text-gray-700">
               {isConnected ? `Connected to: ${"SpectraDerma"}` : 'No device connected'}
+              
             </p>
           </div>
 
-          <div className="flex justify-center mb-40">
+          <div className="flex justify-center mb-40 space-x-2 items-center">
             <span
               className={`inline-block flex justify-center py-2 px-4 rounded-full text-white ${
                 isConnected ? 'bg-green-500' : 'bg-red-500'
@@ -137,8 +151,14 @@ export default function Home() {
                >
                 {isConnected ? 'Connected' : 'Disconnected'}
             </span>
+            <Button
+              onClick={() => setShowChart(prev => !prev)}
+              className="bg-gray-700 text-white py-2 px-4 border-2 border-gray-700 hover:bg-gray-600 transition-all duration-300"
+            >
+              {showChart ? <Eye/> : <EyeOff/>}
+            </Button>
            </div>
-           <HealthChart />
+          {showChart && sensorData.length != 0 && <HealthChart data={sensorData} />}
           <div>
           </div>
         </CardContent>
