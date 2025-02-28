@@ -44,11 +44,12 @@ export default function Home() {
 
     try {
       const connectionTime = new Date();
-      setIsConnected(true);
+      
       const notifications = await readCharacteristicValue(characteristic);
       notifications.addEventListener("characteristicvaluechanged", event => {
         const value = (event.target as BluetoothRemoteGATTCharacteristic).value;
         if (!value) return;
+        setIsConnected(true);
         // Convert the DataView to a string for logging.
         const decoder = new TextDecoder("utf-8");
         const dataString = decoder.decode(value);
