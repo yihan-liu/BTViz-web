@@ -34,6 +34,7 @@ export default function Home() {
   const [sensorData, setSensorData] = useState<{ timestamp: number; values: number[] }[]>([]);
   const [showChart, setShowChart] = useState<boolean>(true);
   const MAX_CHART_BUFFER_SIZE = 500;
+  // TEST
   interface NotificationEntry {
     timestamp: Date;
     data: number[];
