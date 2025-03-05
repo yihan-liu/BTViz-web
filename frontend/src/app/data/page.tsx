@@ -66,7 +66,72 @@ export default function DataPage() {
 
   const handleDownloadClick = async() => {
     const fetchedData = await fetchData();
+    if (!fetchedData || fetchedData.length === 0) {
+      toast.error("No data available to download.");
+      return;
+    }
     console.log("Download button clicked");
+
+    let dataArrayLength = 0;
+    for(const doc of fetchedData){
+      const firstNotif = doc.notifications[0];
+      if (firstNotif.data && Array.isArray(firstNotif.data)) {
+        dataArrayLength = firstNotif.data.length;
+        break;
+      }
+    } 
+    const dataHeaders = [];
+    for (let i = 0; i < dataArrayLength; i++) {
+      dataHeaders.push(`data_${i}`);
+    } 
+    const headers = ["id","timestamp","notificationTimestamp",...dataHeaders];
+    const csvHeader = headers.join(",") + "\n";
+
+
+
+  const rows: string[] = [];
+  for (const doc of fetchedData) {
+    const { id, batchTimestamp, notifications } = doc;
+    if (notifications && notifications.length > 0) {
+      for (const notification of notifications) {
+        const notifTimestamp = notification.timestamp || "";
+       
+        const dataArray = notification.data || [];
+        const dataValues = [];
+        for (let i = 0; i < dataArrayLength; i++) {
+          let val = dataArray[i] !== undefined ? dataArray[i] : "";
+          if (typeof val === "string") {
+            val = val.replace(/"/g, '""');
+            val = `"${val}"`;
+          }
+          dataValues.push(val);
+        }
+        const row = [id, batchTimestamp, notifTimestamp, ...dataValues];
+        rows.push(row.join(","));
+      }
+    } else {
+      const emptyData = Array(dataArrayLength).fill("");
+      const row = [id, batchTimestamp, "", ...emptyData];
+      rows.push(row.join(","));
+    }
+  }
+
+  const csvRowsString = rows.join("\n");
+  const csvContent = csvHeader + csvRowsString;
+  const encodedUri = encodeURI("data:text/csv;charset=utf-8," + csvContent);
+
+
+
+
+    const link = document.createElement("a")
+    link.setAttribute("href", encodedUri);
+    link.setAttribute(
+      "download",
+      `spectraderama_data_${date?.toISOString().substring(0, 10)}.csv`
+    );
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
 
