@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
-import { format } from "date-fns";
+import { format } from "date-fns/format";
 import React from "react";
 import {
   Popover,
@@ -14,15 +14,17 @@ import {
 import { cn } from "@/lib/utils"
 import { Calendar as CalendarIcon } from "lucide-react"
 import { Line } from "react-chartjs-2";
-import { collection, addDoc, setDoc, doc, getDocs} from "firebase/firestore"
-
-
+import { collection, addDoc, setDoc, doc, getDocs, getDoc,query, where,DocumentData,documentId } from "firebase/firestore"
+import { toast } from 'sonner';
+import { db } from "../utils/firebaseConfig";
+import { formatDate } from "date-fns";
 
 
 export default function DataPage() {
   const [date, setDate] = React.useState<Date | undefined>(new Date())
   const [isClient, setIsClient] = useState(false);
   const [chartKey, setChartKey] = useState(0);
+  const [data, setData] = useState<any[]>([]);
 
   useEffect(() => {
     setIsClient(true); // Ensure Chart.js only loads on client
@@ -30,10 +32,40 @@ export default function DataPage() {
   }, []);
 
 
+  const fetchData = async() =>{
+    try{
+      const formattedDate = date.toISOString().substring(0, 10);
+      const nextDay = new Date(date);
+      nextDay.setDate(date.getDate() + 1);
+      const nextDate = nextDay.toISOString().substring(0, 10);
+      
+      console.log(formattedDate);
+      const q = query(collection(db, "spectradermadata"),where(documentId(),'>=',formattedDate),where(documentId(),'<',nextDate));
+    
 
-  
 
-  const handleDownloadClick = () => {
+
+      const querySnapshot = await getDocs(q);
+      console.log(querySnapshot);
+
+      const fetchedData: any[]= [];
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        fetchedData.push({ id: doc.id, ...(data as object) });
+      });
+      console.log("Fetched Data:", fetchedData);
+      setData(fetchedData);
+      return fetchedData;
+    }
+   catch (error) {
+    toast.error("Error fetching data: " + error.message);
+  }
+};
+
+
+
+  const handleDownloadClick = async() => {
+    const fetchedData = await fetchData();
     console.log("Download button clicked");
   };
 
@@ -41,7 +73,7 @@ export default function DataPage() {
 
   
 
-
+ 
   return (
     <div className="w-full flex-wrap min-h-screen flex flex-col overflow-y-auto p-4">
       <div className="w-full flex-grow overflow-y-auto">
