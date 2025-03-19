@@ -10,9 +10,8 @@ import { Card ,
   import Link from "next/link";
   import { toast } from 'sonner';
 
-import { connectToDevice, dataViewToArray, readCharacteristicValue } from './utils/BLEfunctions';
-import { set } from 'date-fns';
-import { collection, addDoc, setDoc, doc } from "firebase/firestore"
+import { connectToDevice, readCharacteristicValue } from './utils/BLEfunctions';
+import {setDoc, doc } from "firebase/firestore"
 import { db } from './utils/firebaseConfig';
 import { HealthChart } from './utils/HealthChart';
 import { Eye, EyeOff } from 'lucide-react';
@@ -22,9 +21,6 @@ export default function Home() {
   const deviceName: string = "SpectraDerma"
   const optionalServiceUUID: number = 0xACEF
   const optionalCharacteristicUUID: number = 0xFF01
-
-  // BASE URL FOR WHICH API CALLS ARE TO BE MADE
-  const baseURL: string = "localhost:3000"
 
   // STATE HOOKS
   const [device, setDevice] = useState<BluetoothDevice | null>(null);

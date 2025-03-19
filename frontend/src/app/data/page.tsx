@@ -1,6 +1,5 @@
 "use client"; // Required for using useState and other hooks in Next.js 13+ App Router
-import { useState,useEffect } from "react";
-import dynamic from "next/dynamic";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
@@ -13,24 +12,15 @@ import {
 } from "@/components/ui/popover"
 import { cn } from "@/lib/utils"
 import { Calendar as CalendarIcon } from "lucide-react"
-import { Line } from "react-chartjs-2";
-import { collection, addDoc, setDoc, doc, getDocs, getDoc,query, where,DocumentData,documentId } from "firebase/firestore"
+
+import { collection, getDocs, query, where, documentId } from "firebase/firestore"
 import { toast } from 'sonner';
 import { db } from "../utils/firebaseConfig";
-import { formatDate } from "date-fns";
+
 
 
 export default function DataPage() {
   const [date, setDate] = React.useState<Date | undefined>(new Date())
-  const [isClient, setIsClient] = useState(false);
-  const [chartKey, setChartKey] = useState(0);
-  const [data, setData] = useState<any[]>([]);
-
-  useEffect(() => {
-    setIsClient(true); // Ensure Chart.js only loads on client
-    setChartKey((prev) => prev + 1);
-  }, []);
-
 
   const fetchData = async() =>{
     try{
