@@ -32,7 +32,8 @@ export default function Home() {
   const MAX_CHART_BUFFER_SIZE = 500;
   // TEST
   interface NotificationEntry {
-    timestamp: Date;
+    // maybe wont work might need timestamp: date()
+    timestamp: number;
     data: number[];
   }
   const notificationBuffer: NotificationEntry[] = [];

@@ -56,7 +56,11 @@ export default function DataPage() {
       return fetchedData;
     }
    catch (error) {
-    toast.error("Error fetching data: " + error.message);
+      if (error instanceof Error) {
+        toast.error("Error fetching data: " + error.message);
+      } else {
+        toast.error("Error fetching data: " + String(error));
+      }
   }
 };
 
