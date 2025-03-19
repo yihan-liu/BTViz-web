@@ -63,6 +63,8 @@ export function HealthChart({ data }: SensorChartProps) {
                     left: 12,
                     right: 12,
                 }}
+                width={200}      // Set width to 1000px or any other value
+                height={200}      // Set height to 500px or any other value
             >
                 <CartesianGrid vertical={false} />
                 {/* <XAxis
@@ -75,9 +77,10 @@ export function HealthChart({ data }: SensorChartProps) {
                     }
                 /> */}
                 <Legend
-                    verticalAlign="top"
-                    align="center"
-                    wrapperStyle={{ paddingBottom: "10px" }} // Adjust spacing
+                 layout="vertical"  
+                    verticalAlign="bottom"
+                    align="right"
+                    wrapperStyle={{ paddingBottom: "0px" }} // Adjust spacing
                 />
 
                 {channelColors.map((color, index) => {
