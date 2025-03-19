@@ -16,18 +16,12 @@ interface SensorChartProps {
 
 // Define a color palette for 12 channels
 const channelColors = [
-    "hsl(0, 70%, 50%)",    // Channel 0
-    "hsl(30, 70%, 50%)",   // Channel 1
-    "hsl(60, 70%, 50%)",   // Channel 2
-    "hsl(90, 70%, 50%)",   // Channel 3
-    "hsl(120, 70%, 50%)",  // Channel 4
-    "hsl(150, 70%, 50%)",  // Channel 5
-    "hsl(180, 70%, 50%)",  // Channel 6
-    "hsl(210, 70%, 50%)",  // Channel 7
-    "hsl(240, 70%, 50%)",  // Channel 8
-    "hsl(270, 70%, 50%)",  // Channel 9
-    "hsl(300, 70%, 50%)",  // Channel 10
-    "hsl(330, 70%, 50%)",  // Channel 11
+    "hsl(270, 70%, 50%)", // Channel 1: Purple
+    "hsl(240, 70%, 50%)", // Channel 2: Blue
+    "hsl(120, 70%, 50%)", // Channel 3: Green
+    "hsl(60, 70%, 50%)",  // Channel 4: Yellow
+    "hsl(0, 70%, 50%)",   // Channel 5: Red
+    "hsl(25, 70%, 35%)",  // Channel 6: Brown
 ];
 
 // Build a chart configuration object for each channel.
