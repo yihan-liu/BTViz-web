@@ -1,7 +1,7 @@
 "use client"
 
 import { ChartContainer, ChartConfig } from "@/components/ui/chart";
-import { Area, AreaChart, CartesianGrid, XAxis, Tooltip } from "recharts";
+import { Area, AreaChart, CartesianGrid, XAxis, Tooltip, Legend} from "recharts";
 import { ChartTooltipContent } from "@/components/ui/chart";
 // import { Monitor } from "react-icons/your-icon-library"; // Uncomment if you have an icon
 
@@ -80,6 +80,12 @@ export function HealthChart({ data }: SensorChartProps) {
                         new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                     }
                 /> */}
+                <Legend
+                    verticalAlign="top"
+                    align="center"
+                    wrapperStyle={{ paddingBottom: "10px" }} // Adjust spacing
+                />
+
                 {channelColors.map((color, index) => {
                     const channelKey = `channel${index}`;
                     return (
@@ -90,6 +96,7 @@ export function HealthChart({ data }: SensorChartProps) {
                             fill={chartConfig[channelKey].color}
                             fillOpacity={0.0}
                             stroke={chartConfig[channelKey].color}
+                           
                         />
                     );
                 })}
