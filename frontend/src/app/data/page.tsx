@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns/format";
-import React from "react";
+import React, { useState } from "react";
 import {
   Popover,
   PopoverContent,
@@ -21,9 +21,17 @@ import { db } from "../utils/firebaseConfig";
 
 export default function DataPage() {
   const [date, setDate] = React.useState<Date | undefined>(new Date())
-
+  const [isClient, setIsClient] = useState(false);
+  const [chartKey, setChartKey] = useState(0);
+  const [data, setData] = useState<any[]>([]);
+  
   const fetchData = async() =>{
-    try{
+    try {
+      if (!date) {
+        setDate(new Date());
+        toast("Please select a date.");
+        return;
+      }
       const formattedDate = date.toISOString().substring(0, 10);
       const nextDay = new Date(date);
       nextDay.setDate(date.getDate() + 1);
