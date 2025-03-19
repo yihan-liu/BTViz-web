@@ -41,7 +41,7 @@ export default function Home() {
   async function handleScan() {
 
     const characteristic = await connectToDevice(deviceName, optionalServiceUUID, optionalCharacteristicUUID);
-    console.log(characteristic);
+
     
     //Checks if device is still connected or not connected
     try{
@@ -111,7 +111,7 @@ export default function Home() {
     const docRef = doc(db, "spectradermadata", currentDate);
     await setDoc(docRef, batchData);
     
-    console.log("Batch data sent to Firebase with ID:", docRef.id);
+    // console.log("Batch data sent to Firebase with ID:", docRef.id);
   } catch (error) {
     console.error("Error sending data to Firebase:", error);
     throw error;
@@ -122,7 +122,7 @@ export default function Home() {
     try {
       // For example, you might call your Firebase function/API:
       await firebaseSend(buffer); // Replace with your actual Firebase sending logic
-      console.log("Sent batch to Firebase:", buffer);
+      // console.log("Sent batch to Firebase:", buffer);
     } catch (err) {
       console.error("Error sending batch to Firebase:", err);
     }
