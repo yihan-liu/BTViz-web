@@ -63,8 +63,8 @@ export function HealthChart({ data }: SensorChartProps) {
                     left: 12,
                     right: 12,
                 }}
-                width={200}      // Set width to 1000px or any other value
-                height={200}      // Set height to 500px or any other value
+                width={100}      // Set width to 1000px or any other value
+                height={100}      // Set height to 500px or any other value
             >
                 <CartesianGrid vertical={false} />
                 {/* <XAxis
