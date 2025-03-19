@@ -1,2 +1,4 @@
 frontend/src/app/utils/firebaseConfig.ts
 frontend/src/app/utils/firebaseConfig
+node_modules/
+frontend/node_modules/
