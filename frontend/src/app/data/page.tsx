@@ -87,8 +87,6 @@ export default function DataPage() {
     const headers = ["id","timestamp","notificationTimestamp",...dataHeaders];
     const csvHeader = headers.join(",") + "\n";
 
-
-
   const rows: string[] = [];
   for (const doc of fetchedData) {
     const { id, batchTimestamp, notifications } = doc;
