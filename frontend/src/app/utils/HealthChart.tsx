@@ -53,9 +53,9 @@ export function HealthChart({ data }: SensorChartProps) {
     
     const chartData = transformSensorData(data);
 
-    // The data prop should be an array of 12 objects, one for each month.
+
     return (
-        <ChartContainer config={chartConfig} className="min-h-[100px]">
+        <ChartContainer config={chartConfig} className="min-h-[100px] max-h-screen">
             <AreaChart
                 accessibilityLayer
                 data={chartData}
