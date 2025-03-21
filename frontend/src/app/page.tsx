@@ -140,8 +140,8 @@ export default function Home() {
     <div className='w-full h-screen flex flex-col items-center justify-center'>
             <div>
                 <Link href="/data"> </Link>
-           </div>
-      <Card className="mx-auto w-4/5 min-h-screen max-h-fit">
+      `     </div>
+      <Card className="mx-auto w-11/12 h-full">
         <CardHeader >
           <CardTitle style={{ fontSize: '30px' }}>
               SpectraDerma Connection
