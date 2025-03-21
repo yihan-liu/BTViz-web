@@ -13,11 +13,10 @@ import {
 } from "@/components/ui/popover"
 import { cn } from "@/lib/utils"
 import { Calendar as CalendarIcon , Clock} from "lucide-react"
-import { Line } from "react-chartjs-2";
 import { collection, addDoc, setDoc, doc, getDocs, getDoc,query, where,DocumentData,documentId } from "firebase/firestore"
 import { toast } from 'sonner';
 import { db } from "../utils/firebaseConfig";
-import { formatDate } from "date-fns";
+
 
 
 export default function DataPage() {
