@@ -1,22 +1,23 @@
 "use client"; // Required for using useState and other hooks in Next.js 13+ App Router
-
+import { useState,useEffect } from "react";
+import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns/format";
-import React, { useState } from "react";
+import React from "react";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { cn } from "@/lib/utils"
-import { Calendar as CalendarIcon } from "lucide-react"
-
-import { collection, getDocs, query, where, documentId } from "firebase/firestore"
+import { Calendar as CalendarIcon , Clock} from "lucide-react"
+import { Line } from "react-chartjs-2";
+import { collection, addDoc, setDoc, doc, getDocs, getDoc,query, where,DocumentData,documentId } from "firebase/firestore"
 import { toast } from 'sonner';
 import { db } from "../utils/firebaseConfig";
-
+import { formatDate } from "date-fns";
 
 
 export default function DataPage() {
@@ -24,24 +25,24 @@ export default function DataPage() {
   const [isClient, setIsClient] = useState(false);
   const [chartKey, setChartKey] = useState(0);
   const [data, setData] = useState<any[]>([]);
-  
+  const [startTime, setStartTime] = useState("09:00");
+  const [endTime, setEndTime] = useState("17:00");
+  useEffect(() => {
+    setIsClient(true); // Ensure Chart.js only loads on client
+    setChartKey((prev) => prev + 1);
+  }, []);
+
+
   const fetchData = async() =>{
-    try {
-      if (!date) {
-        setDate(new Date());
-        toast("Please select a date.");
-        return;
-      }
-      const formattedDate = date.toISOString().substring(0, 10);
-      const nextDay = new Date(date);
-      nextDay.setDate(date.getDate() + 1);
-      const nextDate = nextDay.toISOString().substring(0, 10);
+    try{
       
-      console.log(formattedDate);
-      const q = query(collection(db, "spectradermadata"),where(documentId(),'>=',formattedDate),where(documentId(),'<',nextDate));
-    
-
-
+      const formattedDate = date.toISOString().substring(0, 10);
+      const startDate = new Date(`${formattedDate}T${startTime}:00`);  
+      const endDate = new Date(`${formattedDate}T${endTime}:00`);  
+      const startTimestamp = startDate.toISOString();
+      const endTimestamp = endDate.toISOString();
+     
+      const q = query(collection(db, "spectradermadata"),where(documentId(),'>=',startTimestamp),where(documentId(),'<',endTimestamp));
 
       const querySnapshot = await getDocs(q);
       console.log(querySnapshot);
@@ -56,11 +57,7 @@ export default function DataPage() {
       return fetchedData;
     }
    catch (error) {
-      if (error instanceof Error) {
-        toast.error("Error fetching data: " + error.message);
-      } else {
-        toast.error("Error fetching data: " + String(error));
-      }
+    toast.error("Error fetching data: " + error.message);
   }
 };
 
@@ -88,6 +85,8 @@ export default function DataPage() {
     } 
     const headers = ["id","timestamp","notificationTimestamp",...dataHeaders];
     const csvHeader = headers.join(",") + "\n";
+
+
 
   const rows: string[] = [];
   for (const doc of fetchedData) {
@@ -173,6 +172,35 @@ export default function DataPage() {
                     />
                   </PopoverContent>
                 </Popover>
+                <div className="flex items-center space-x-2">
+                <div className="flex flex-col">
+                  <label htmlFor="startTime" className="text-sm font-medium">Start Time</label>
+                  <div className="flex items-center border rounded px-2 py-1">
+                    <Clock className="w-4 h-4 mr-2" />
+                    <input
+                      type="time"
+                      id="startTime"
+                      value={startTime}
+                      onChange={(e) => setStartTime(e.target.value)}
+                      className="bg-transparent outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex flex-col">
+                  <label htmlFor="endTime" className="text-sm font-medium">End Time</label>
+                  <div className="flex items-center border rounded px-2 py-1">
+                    <Clock className="w-4 h-4 mr-2" />
+                    <input
+                      type="time"
+                      id="endTime"
+                      value={endTime}
+                      onChange={(e) => setEndTime(e.target.value)}
+                      className="bg-transparent outline-none"
+                    />
+                  </div>
+                </div>
+              </div>
 
                 <Button onClick={handleDownloadClick}
               className="bg-black text-white py-2 px-2  border-2 border-black hover:text-black transition-all duration-300">
