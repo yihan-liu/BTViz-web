@@ -35,7 +35,7 @@ export default function DataPage() {
   const fetchData = async() =>{
     try{
       
-      const formattedDate = date.toISOString().substring(0, 10);
+      const formattedDate = date?.toISOString().substring(0, 10);
       const startDate = new Date(`${formattedDate}T${startTime}:00`);  
       const endDate = new Date(`${formattedDate}T${endTime}:00`);  
       const startTimestamp = startDate.toISOString();
