@@ -155,8 +155,76 @@ export async function connectToDevice(
         const device = await requestDeviceByName(deviceName, optionalServiceUUID);
         const server = await connectGATT(device);
         const service = await getPrimaryService(server, optionalServiceUUID)
+        console.log("All characteristics: ", await getAllCharacteristics(service));
         return await getCharacteristic(service, serviceUUID);
     } catch (error: any) {
         return (error.message || error.toString());
     }
+}
+
+/**
+ * Utility to list all possible devices.
+ * @returns returns BluetoothDevice that can be used to connect to any device.
+ */
+export async function getAllDevices(): Promise<BluetoothDevice> {
+    if (typeof navigator === "undefined" || !navigator.bluetooth) {
+        throw new Error("Web Bluetooth is not supported in this browser/environment.");
+    }
+
+    try {
+        const device = await navigator.bluetooth.requestDevice({
+            acceptAllDevices: true, // Accept any device
+        });
+        return device;
+    } catch (error: any) {
+        throw new Error("Error requesting device: ${ error.message }");
+    }
+}
+
+
+/**
+ * Retrieves all primary services available on a connected BluetoothDevice.
+ * @param server - The BluetoothRemoteGATTServer to query for services.
+ * @returns A Promise that resolves to an array of BluetoothRemoteGATTService.
+ */
+export async function getAllServices(
+    server: BluetoothRemoteGATTServer
+): Promise<BluetoothRemoteGATTService[]> {
+    if (!server) {
+        throw new Error("Device GATT is not available.");
+    }
+    // Ensure the device is connected
+    if (!server.connected) {
+        await server.connect();
+    }
+
+    try {
+        // Calling getPrimaryServices without a filter returns all primary services.
+        const services = await server.getPrimaryServices();
+        console.log("Found services:", services);
+        return services;
+    } catch (error: any) {
+        throw new Error(`Failed to get primary services: ${error.message}`);
+    }
+}
+
+
+
+/**
+ * Util to retrieve all characteristics from a given service.
+ * @param service - The bluetooth serivce to query for characteristics.
+ * @returns A promise that resolves to an array of BluetoothRemoteGATTCharacteristic objects.
+ */
+export async function getAllCharacteristics(
+    service: BluetoothRemoteGATTService
+): Promise<BluetoothRemoteGATTCharacteristic[]> {
+  if (!service) {
+    throw new Error("No blueooth service provided");
+  }  
+  try {
+    const characteristics = await service.getCharacteristics();
+    return characteristics;
+  } catch (error: any) {
+    throw new Error(`Failed to get characteristics: ${error.message}`);
+  }
 }
