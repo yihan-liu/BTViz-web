@@ -15,14 +15,23 @@ import {setDoc, doc } from "firebase/firestore"
 import { db } from './utils/firebaseConfig';
 import { HealthChart } from './utils/HealthChart';
 import { Eye, EyeOff } from 'lucide-react';
+import { Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogDescription,
+  DialogTitle,
+  DialogTrigger, } from "@/components/ui/dialog"
 
 export default function Home() {
   // global consts do not touch
-  const deviceName: string = "SpectraDerma"
+
   const optionalServiceUUID: number = 0xACEF
   const optionalCharacteristicUUID: number = 0xFF01
 
   // STATE HOOKS
+  const[deviceName, setDeviceName] = useState<string>("SpectraDerma");
+  const [open, setOpen] = useState(false);
+  const [tempDeviceName, setTempDeviceName] = useState(deviceName);
   const [device, setDevice] = useState<BluetoothDevice | null>(null);
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [isConnected, setIsConnected] = useState<boolean>(false);
@@ -144,7 +153,7 @@ export default function Home() {
       <Card className="mx-auto w-11/12 h-full">
         <CardHeader >
           <CardTitle style={{ fontSize: '30px' }}>
-              SpectraDerma Connection
+              {deviceName} Connection
           </CardTitle>
           <CardDescription style={{ fontSize: '16px' }}>
               <p>Connect to your device via BLE</p>
@@ -155,7 +164,7 @@ export default function Home() {
           <div>
             <p>Ensure that the device is powered on and in pairing mode</p>
             <p className="flex justify-center text-lg text-gray-700">
-              {isConnected ? `Connected to: ${"SpectraDerma"}` : 'No device connected'}
+              {isConnected ? `Connected to: ${deviceName}` : 'No device connected'}
               
             </p>
           </div>
@@ -181,7 +190,62 @@ export default function Home() {
         </CardContent>
 
          <CardFooter className= "flex justify-center">
-          <div>
+          <div className = "flex items-center gap-4">
+            <Dialog open = {open} onOpenChange={setOpen}>
+              <DialogTrigger>Edit Profile</DialogTrigger>
+              <DialogContent>
+              <DialogHeader>
+                  <DialogTitle>Edit Profile</DialogTitle>
+                  <DialogDescription>
+                    Make sure to save changes when you are done.
+                  </DialogDescription>
+                  </DialogHeader>
+                  <div className="mt-4">
+                      <label className="block text-sm font-medium text-gray-700">
+                        Device Name
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Enter device name"
+                        value={tempDeviceName}
+                        onChange={(e) => setTempDeviceName(e.target.value)}
+                        className="w-full mt-1 p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                      <div className="mt-4">
+                              <label className="block text-sm font-medium text-gray-700">
+                                Select Service
+                              </label>
+                              <select
+                           
+                     // value={selectedService}
+                     // onChange={handleServiceChange}
+                      className="w-full mt-1 p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                    </select>
+                  </div>
+                  <div className="mt-4">
+                      <label className="block text-sm font-medium text-gray-700">
+                        Select Characteristic
+                      </label>
+                      <select
+                        //value={selectedCharacteristic}
+                      // onChange={handleCharacteristicChange}
+                        className="w-full mt-1 p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                      </select>
+            </div>
+                  <Button className="bg-black text-white border-0" onClick={() => {
+                      setDeviceName(tempDeviceName);
+                      setOpen(false);    
+                      console.log("Profile changes saved");
+                       }}>
+                      Save Changes
+                    </Button>
+
+              </DialogContent>
+            </Dialog>
+
             <Button onClick={handleScan} disabled={isConnected}
               className="bg-black text-white py-2 px-6  border-2 border-black hover:text-black transition-all duration-300">
                 {isConnected ? 'Reconnect' : 'Connect to SpectraDerma'}
