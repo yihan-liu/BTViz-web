@@ -83,14 +83,14 @@ export default function DataPage() {
     for (let i = 0; i < dataArrayLength; i++) {
       dataHeaders.push(`data_${i}`);
     } 
-    const headers = ["id","timestamp","notificationTimestamp",...dataHeaders];
+    const headers = ["id","timestamp","notificationTimestamp","deviceName",...dataHeaders];
     const csvHeader = headers.join(",") + "\n";
 
 
 
   const rows: string[] = [];
   for (const doc of fetchedData) {
-    const { id, batchTimestamp, notifications } = doc;
+    const { id, batchTimestamp, notifications, deviceName } = doc;
     if (notifications && notifications.length > 0) {
       for (const notification of notifications) {
         const notifTimestamp = notification.timestamp || "";
@@ -105,7 +105,7 @@ export default function DataPage() {
           }
           dataValues.push(val);
         }
-        const row = [id, batchTimestamp, notifTimestamp, ...dataValues];
+        const row = [id, batchTimestamp, notifTimestamp, deviceName, ...dataValues];
         rows.push(row.join(","));
       }
     } else {

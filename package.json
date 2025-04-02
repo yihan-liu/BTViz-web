@@ -3,6 +3,7 @@
     "@shadcn/ui": "^0.0.4",
     "chart.js": "^3.9.1",
     "firebase": "^11.4.0",
+    "install": "^0.13.0",
     "react-chartjs-2": "^3.0.3"
   }
 }

@@ -62,7 +62,6 @@ export default function Home() {
     data: number[];
   }
   const notificationBuffer: NotificationEntry[] = [];
-console.log(heartRateValue);
 
 
 const sensorDataRef = useRef(sensorData);
@@ -113,7 +112,6 @@ useEffect(() => {
 
     if (bluetoothDevice.gatt && bluetoothDevice.gatt.connected) {
       setIsConnected(true);
-     
     } else{
       setIsConnected(false);
     }
@@ -167,12 +165,14 @@ useEffect(() => {
   const batchData = {
     batchTimestamp: Date.now(),
     notifications: buffer,
+    deviceName: deviceName
   };
 
   try {
     const currentDate = new Date().toISOString();
 
     const docRef = doc(db, "spectradermadata", currentDate);
+    console.log(batchData);
     await setDoc(docRef, batchData);
     
     // console.log("Batch data sent to Firebase with ID:", docRef.id);
