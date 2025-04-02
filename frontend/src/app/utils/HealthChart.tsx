@@ -1,7 +1,7 @@
 "use client"
 
 import { ChartContainer, ChartConfig } from "@/components/ui/chart";
-import { Area, AreaChart, CartesianGrid, XAxis, Tooltip, Legend} from "recharts";
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer} from "recharts";
 import { ChartTooltipContent } from "@/components/ui/chart";
 // import { Monitor } from "react-icons/your-icon-library"; // Uncomment if you have an icon
 
@@ -22,6 +22,12 @@ const channelColors = [
     "hsl(60, 70%, 50%)",  // Channel 4: Yellow
     "hsl(0, 70%, 50%)",   // Channel 5: Red
     "hsl(25, 70%, 35%)",  // Channel 6: Brown
+    // "hsl(195, 70%, 50%)",  // Channel 7: Teal
+    // "hsl(315, 70%, 50%)",  // Channel 8: Pink
+    // "hsl(45, 100%, 50%)",  // Channel 9: Gold
+    // "hsl(175, 70%, 45%)",  // Channel 10: Sea Green
+    // "hsl(15, 85%, 55%)",   // Channel 11: Coral
+    // "hsl(200, 85%, 65%)"   // Channel 12: Sky Blue
 ];
 
 // Build a chart configuration object for each channel.
@@ -56,6 +62,7 @@ export function HealthChart({ data }: SensorChartProps) {
 
     return (
         <ChartContainer config={chartConfig} className="min-h-[100px] max-h-screen">
+            
             <AreaChart
                 accessibilityLayer
                 data={chartData}
@@ -63,11 +70,11 @@ export function HealthChart({ data }: SensorChartProps) {
                     left: 12,
                     right: 12,
                 }}
-                width={100}      // Set width to 1000px or any other value
-                height={100}      // Set height to 500px or any other value
+               //width={100}      // Set width to 1000px or any other value
+                //height={100}      // Set height to 500px or any other value
             >
                 <CartesianGrid vertical={false} />
-                {/* <XAxis
+                {/* { <XAxis
                     dataKey="timestamp"
                     tickLine={false}
                     axisLine={false}
@@ -75,7 +82,14 @@ export function HealthChart({ data }: SensorChartProps) {
                     tickFormatter={(timestamp) =>
                         new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                     }
-                /> */}
+                /> } */}
+                 <YAxis 
+                        tickLine={false}
+                        axisLine={false}
+                        domain={['auto', 'auto']}  // Autoscale domain
+                        tickMargin={10}
+                    />
+
                 <Legend
                  layout="vertical"  
                     verticalAlign="bottom"
@@ -98,6 +112,7 @@ export function HealthChart({ data }: SensorChartProps) {
                     );
                 })}
             </AreaChart>
+       
         </ChartContainer>
     );
 }

@@ -26,6 +26,7 @@ export default function DataPage() {
   const [data, setData] = useState<any[]>([]);
   const [startTime, setStartTime] = useState("09:00");
   const [endTime, setEndTime] = useState("17:00");
+  
   useEffect(() => {
     setIsClient(true); // Ensure Chart.js only loads on client
     setChartKey((prev) => prev + 1);
@@ -125,7 +126,7 @@ export default function DataPage() {
     link.setAttribute("href", encodedUri);
     link.setAttribute(
       "download",
-      `spectraderama_data_${date?.toISOString().substring(0, 10)}.csv`
+      `BTVIZ_${date?.toISOString().substring(0, 10)}.csv`
     );
     document.body.appendChild(link);
     link.click();
