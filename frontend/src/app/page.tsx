@@ -21,6 +21,8 @@ import { Dialog,
   DialogDescription,
   DialogTitle,
   DialogTrigger, } from "@/components/ui/dialog"
+import { DEVICE_UUIDS, KnownDeviceName } from './utils/uuid-map';
+
 
 export default function Home() {
   // global consts do not touch
@@ -102,12 +104,19 @@ useEffect(() => {
     //   return;  // Exit early if no service or characteristic is selected
     // }
     
-    const characteristic = await connectToDevice(deviceName, optionalServiceUUID, optionalCharacteristicUUID);
+    const dev = (deviceName in DEVICE_UUIDS
+      ? (deviceName as KnownDeviceName)
+      : "SpectraDerma") as KnownDeviceName;
+
+    const { service,characteristic } = DEVICE_UUIDS[dev];
+    console.log(service,characteristic)
+    
+    const characteristicHandle = await connectToDevice(deviceName, service, characteristic);
     
     
     //Checks if device is still connected or not connected
     try{
-    const bluetoothDevice = characteristic.service.device;
+    const bluetoothDevice = characteristicHandle.service.device;
     setDevice(bluetoothDevice);
 
     if (bluetoothDevice.gatt && bluetoothDevice.gatt.connected) {
@@ -127,7 +136,7 @@ useEffect(() => {
     try {
       const connectionTime = new Date();
       
-      const notifications = await readCharacteristicValue(characteristic);
+      const notifications = await readCharacteristicValue(characteristicHandle);
       notifications.addEventListener("characteristicvaluechanged", event => {
         const value = (event.target as BluetoothRemoteGATTCharacteristic).value;
         if (!value) return;
