@@ -123,8 +123,6 @@ export async function readCharacteristicValue(
         throw error;
     }
 }
-
-
 /**
  * Utility to convert a DataView to a numeric array for logging or processing.
  * @param dataView - The DataView containing bytes.
@@ -180,8 +178,6 @@ export async function getAllDevices(): Promise<BluetoothDevice> {
         throw new Error("Error requesting device: ${ error.message }");
     }
 }
-
-
 /**
  * Retrieves all primary services available on a connected BluetoothDevice.
  * @param server - The BluetoothRemoteGATTServer to query for services.

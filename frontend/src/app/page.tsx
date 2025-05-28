@@ -1,33 +1,36 @@
 "use client"
+import { SidebarProvider } from '@/components/ui/sidebar'
+import { AppSidebar } from "@/components/ui/app-sidebar"
 import { useEffect, useState, useRef} from 'react';
 import { Button } from "@/components/ui/button";
 import { Card ,
   CardContent,
-  CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,} from '@/components/ui/card';
   import Link from "next/link";
   import { toast } from 'sonner';
 
-import { connectToDevice, getAllDevices, readCharacteristicValue, getAllServices, getAllCharacteristics } from './utils/BLEfunctions';
+import { connectToDevice, readCharacteristicValue } from './utils/BLEfunctions';
 import {setDoc, doc } from "firebase/firestore"
 import { db } from './utils/firebaseConfig';
 import { HealthChart } from './utils/HealthChart';
 import { Eye, EyeOff } from 'lucide-react';
-import { Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogDescription,
-  DialogTitle,
-  DialogTrigger, } from "@/components/ui/dialog"
 import { DEVICE_UUIDS, KnownDeviceName } from './utils/uuid-map';
+import {
+  HeartPulse,
+  Activity,
+  Thermometer,
+  GaugeCircle,
+  Droplets,
+} from "lucide-react";
+import DashboardCard from "@/components/ui/dashboardCard";
 
 
 export default function Home() {
   // global consts do not touch
   const optionalServiceUUID: number =   0xACEF          //  "0000ACEF-0000-1000-8000-00805F9B34FB"         
   const optionalCharacteristicUUID: number = 0xFF01     //  "0000FF01-0000-1000-8000-00805F9B34FB"    
+   const [profiles, setProfiles] = useState<string[]>([]);    // all saved
 
   // STATE HOOKS
   const[deviceName, setDeviceName] = useState<string>("");
@@ -51,27 +54,39 @@ export default function Home() {
   const [heartRateValue, setHeartRateValue] = useState<number | null>(null);
   const [tempValue, setTempValue] = useState<number | null>(null);
   const [atmPressure, setAtmPresure] = useState<number | null>(null);
-  const [relativeHummitidy, setRelativeHummidity] = useState<number | null>(null);
+  const [relativeHumidity, setRelativeHummidity] = useState<number | null>(null);
   const [pulseOximetry, setPulseOximetry] = useState<number | null>(null);
   const MAX_CHART_BUFFER_SIZE = 500;
   
- 
-  
 
-  interface NotificationEntry {
+ interface NotificationEntry {
     // maybe wont work might need timestamp: date()
     timestamp: number;
     data: number[];
   }
+
+useEffect(() => {
+  const stored = localStorage.getItem("bleProfiles");
+  if (stored) {
+    try {
+      setProfiles(JSON.parse(stored));      // ["SpectraDerma", "MySensor", …]
+    } catch {
+      /* ignore JSON errors */
+    }
+  }
+}, []);
+
+useEffect(() => {
+  localStorage.setItem("bleProfiles", JSON.stringify(profiles));
+}, [profiles]);
   const notificationBuffer: NotificationEntry[] = [];
-
-
 const sensorDataRef = useRef(sensorData);
 
 // Update the ref whenever sensorData changes
 useEffect(() => {
   sensorDataRef.current = sensorData;
 }, [sensorData]);
+
 
 // Set up the 5-second interval only once on component mount
 useEffect(() => {
@@ -85,7 +100,7 @@ useEffect(() => {
         setTempValue(latestData.values[8]);
         setAtmPresure(latestData.values[10]);
         setPulseOximetry(latestData.values[7]);
-        setRelativeHummidity(latestData.values[9]);
+        setRelativeHummidity(latestData.values[9] *100);
       }
     }
   }, 2000); 
@@ -93,10 +108,18 @@ useEffect(() => {
 }, []);
 
 
-  
+function deleteProfile(name: string) {
+  setProfiles((prev) => {
+    const next = prev.filter((p) => p !== name);
+    // if we just deleted the active profile, clear or pick the first remaining
+    if (name === deviceName) setDeviceName(next[0] ?? "");
+    return next;
+  });
+}
+
  
 
-  
+
 
   async function handleScan() {
     // if (!selectedService || !selectedCharacteristic) {
@@ -104,16 +127,13 @@ useEffect(() => {
     //   return;  // Exit early if no service or characteristic is selected
     // }
     
-    const dev = (deviceName in DEVICE_UUIDS
-      ? (deviceName as KnownDeviceName)
-      : "SpectraDerma") as KnownDeviceName;
+    const dev = (deviceName in DEVICE_UUIDS ? (deviceName as KnownDeviceName): "SpectraDerma") as KnownDeviceName;
 
     const { service,characteristic } = DEVICE_UUIDS[dev];
-    console.log(service,characteristic)
+    // console.log(service,characteristic)
     
     const characteristicHandle = await connectToDevice(deviceName, service, characteristic);
-    
-    
+    // console.log(characteristicHandle);
     //Checks if device is still connected or not connected
     try{
     const bluetoothDevice = characteristicHandle.service.device;
@@ -121,6 +141,7 @@ useEffect(() => {
 
     if (bluetoothDevice.gatt && bluetoothDevice.gatt.connected) {
       setIsConnected(true);
+      
     } else{
       setIsConnected(false);
     }
@@ -130,6 +151,7 @@ useEffect(() => {
       setDevice(null);
     } )
   } catch (error) {
+    console.log("Is not Connected")
     setErrorMessage(error.message);
   }
 
@@ -164,6 +186,7 @@ useEffect(() => {
       
       
     } catch (error) {
+      console.log("Error");
       setErrorMessage(error.message);
       toast.error(error.message);
     }
@@ -181,7 +204,7 @@ useEffect(() => {
     const currentDate = new Date().toISOString();
 
     const docRef = doc(db, "spectradermadata", currentDate);
-    console.log(batchData);
+    // console.log(batchData);
     await setDoc(docRef, batchData);
     
     // console.log("Batch data sent to Firebase with ID:", docRef.id);
@@ -213,113 +236,140 @@ useEffect(() => {
 
 
   return (
-    <div className='w-full h-screen flex flex-col items-center justify-center'>
+<SidebarProvider>
+    <div className='flex  w-screen '>
+      <AppSidebar
+              isConnected={isConnected}
+              onScan={handleScan}
+              open={open}
+              setOpen={setOpen}
+              tempDeviceName={tempDeviceName}
+              setTempDeviceName={setTempDeviceName}
+        
+            onSaveProfile={() => {
+            // add to list if it’s new, then make it the active device
+            if (tempDeviceName && !profiles.includes(tempDeviceName)) {
+              setProfiles([...profiles, tempDeviceName]);
+            }
+            setDeviceName(tempDeviceName);   // active/selected profile
+            setOpen(false);                  // close the dialog
+            }}
+        
+            profiles={profiles}
+            deviceName={deviceName}
+            setDeviceName={setDeviceName}
+            onDeleteProfile={deleteProfile}
+        />
             <div>
                 <Link href="/data"> </Link>
       `     </div>
-      <Card className="mx-auto w-11/12 h-full">
-        <CardHeader className = "relative" >
-        <div className="absolute top-6 right-20 flex space-x-2 items-center">
-            <span
-              className={`inline-block flex justify-center py-2 px-4 rounded-full text-white ${
-                isConnected ? 'bg-green-500' : 'bg-red-500'
-              }`}
-               >
-                {isConnected ? 'Connected' : 'Disconnected'}
-            </span> 
-        <Button
+        
+        {/* ——— RIGHT (main) ——— */}
+        <main className="flex-1 flex flex-col overflow-y-auto p-6 gap-6">
+        <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold">
+  {isConnected
+    ? (
+      <>Connected to <span className="text-primary">{deviceName || "Unknown Device"}</span></>
+    )
+    : (
+      <>Not connected to <span className="text-muted-foreground">{deviceName || "any device"}</span></>
+    )}
+</h2>
+          <Button
               onClick={() => setShowChart(prev => !prev)}
               className="bg-gray-700 text-white py-2 px-4 border-2 border-gray-700 hover:bg-gray-600 transition-all duration-300"
             >
               {showChart ? <Eye/> : <EyeOff/>}
           </Button>
         </div>
-
-          <CardTitle style={{ fontSize: '30px' }}>
-          {isConnected ? `Connected to: ${deviceName}` : 'BLE Connection Interface'} 
-          </CardTitle>
-          <CardDescription style={{ fontSize: '16px' }}>
-              <p>Ensure that the device is powered on and in pairing mode</p>
-          </CardDescription>
-        </CardHeader>
-        
-        <CardContent className="flex-grow flex flex-col justify-between" >
-  
-
-
-
-
-
-
-
-
-
-
-
-
-
-          <div className="flex justify-center text-xl text-gray-700 mt-4 space-x-4">
-              {heartRateValue !== null && ( <p>Heart Rate: {heartRateValue}</p>)}
-              {pulseOximetry !== null && <p>o2 Saturation: {pulseOximetry}</p>}
-              {tempValue !== null && <p>Temperature: {tempValue}</p>}
-              {atmPressure !== null && <p>Atmospheric Pressure: {atmPressure}</p>}
-              {relativeHummitidy !== null && <p>Relative Hummidity: {relativeHummitidy}</p>}
-          </div>
-          {showChart && sensorData.length != 0 && <HealthChart data={sensorData} />}
-        
-        </CardContent>
-
-         <CardFooter className= "flex justify-center">
-          <div className = "flex items-center gap-4">
-            <Dialog open = {open} onOpenChange={setOpen}>
-              <DialogTrigger asChild>
-                <Button variant="outline">
-                Edit Profile
-                </Button>
-              </DialogTrigger>
-
-              <DialogContent>
-              <DialogHeader>
-                  <DialogTitle>Edit Profile</DialogTitle>
-                  <DialogDescription>
-                    Make sure to save changes when you are done.
-                  </DialogDescription>
-                  </DialogHeader>
-                  <div className="mt-4">
-                      <label className="block text-sm font-medium text-gray-700">
-                        Device:
-                      </label>
-                      <input
-                            type="text"
-                            value={tempDeviceName}
-                            onChange={(e) => setTempDeviceName(e.target.value)}
-                            placeholder="Enter Device Name"
-                            className="text-sm text-gray-700 w-full mt-1 p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          />
-              
-                      </div>
-                  
-                     
-                  <Button className="bg-black text-white border-0" onClick={() => {
-                      setDeviceName(tempDeviceName);
-                      setOpen(false);    
-                      console.log("Profile changes saved");
-                       }}>
-                      Save Changes
-                    </Button>
-
-              </DialogContent>
-            </Dialog>
-
-            <Button onClick={handleScan} disabled={isConnected}
-              className="bg-black text-white py-2 px-6  border-2 border-black hover:text-black transition-all duration-300">
-                {isConnected ? 'Reconnect' : 'Connect'}
-            </Button>
-          </div>       
-        </CardFooter>
-      </Card>
       
-    </div>
+       {/* ▸ Row 2 – five metric cards */}
+      <div className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+            <DashboardCard
+              title="Heart Rate"
+              value={
+                heartRateValue !== null ? `${heartRateValue} bpm` : "N/A"
+              }
+              icon={HeartPulse}
+              variant="heart"
+            />
+            <DashboardCard
+              title="Pulse Oximetry"
+              value={pulseOximetry !== null ? `${pulseOximetry}%` : "N/A"}
+              icon={Activity}
+              variant="oxygen"
+            />
+            <DashboardCard
+              title="Temperature"
+              value={tempValue !== null ? `${tempValue} °C` : "N/A"}
+              icon={Thermometer}
+              variant="temp"
+            />
+            <DashboardCard
+              title="Relative Humidity"
+              value={
+                relativeHumidity !== null ? `${relativeHumidity}%` : "N/A"
+              }
+              icon={Droplets}
+              variant="humid"
+            />
+            <DashboardCard
+              title="Atmospheric Pressure"
+              value={atmPressure !== null ? `${atmPressure} atm` : "N/A"}
+              icon={GaugeCircle}
+              variant="pressure"
+            />
+          </div>
+
+          {/* Bottom Row: Graph Card */}
+
+
+         {showChart && sensorData.length > 0 && (
+            (deviceName === "MIRAS") ? (
+              <>
+            <Card className="flex-1 flex flex-col  overflow-hidden rounded-2xl border border-border/60 bg-background/70 backdrop-blur shadow-lg">
+              <CardHeader className="p-6">
+                  <CardTitle>Channels 0-2</CardTitle>
+              </CardHeader>
+
+              <CardContent className="flex-1 min-h-0 h-full p-4 pt-0">
+                <HealthChart data={sensorData} 
+                    channels={[0, 1, 2]}
+                />
+              </CardContent>
+            </Card>
+
+            <Card className="flex-1 flex flex-col  overflow-hidden rounded-2xl border border-border/60 bg-background/70 backdrop-blur shadow-lg">
+              <CardHeader className="p-6">
+                  <CardTitle>Channels 3-5</CardTitle>
+              </CardHeader>
+
+              <CardContent className="flex-1 min-h-0 h-full p-4 pt-0">
+                <HealthChart data={sensorData} 
+                    channels={[3,4,5]}
+                />
+              </CardContent>
+            </Card>
+            </>
+            ) : (
+            <Card className="flex-1 flex flex-col  overflow-hidden rounded-2xl border border-border/60 bg-background/70 backdrop-blur shadow-lg">
+              <CardHeader className="p-6">
+                  <CardTitle>Channels 0-5</CardTitle>
+              </CardHeader>
+
+              <CardContent className="flex-1 min-h-0 h-full p-4 pt-0">
+                <HealthChart data={sensorData} 
+                      channels={[0, 1, 2, 3, 4, 5]}
+      
+                />
+              </CardContent>
+            </Card>
+            )
+          )}
+        </main>
+        </div>
+    </SidebarProvider>
     );
   }
   

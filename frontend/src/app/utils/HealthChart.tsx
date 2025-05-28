@@ -3,7 +3,8 @@
 import { ChartContainer, ChartConfig } from "@/components/ui/chart";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer} from "recharts";
 import { ChartTooltipContent } from "@/components/ui/chart";
-// import { Monitor } from "react-icons/your-icon-library"; // Uncomment if you have an icon
+import { split } from "postcss/lib/list";
+
 
 interface SensorData {
     timestamp: number;
@@ -12,6 +13,12 @@ interface SensorData {
 
 interface SensorChartProps {
     data: SensorData[];
+    twocharts?: boolean;
+  
+}
+interface ChannelChartProps {
+  data: SensorData[];
+  channels: number[];         // e.g. [0,1,2]
 }
 
 // Define a color palette for 12 channels
@@ -44,34 +51,59 @@ const chartConfig = channelColors.reduce((config, color, index) => {
 // Transform the sensor data into a format compatible with Recharts:
 // Each object will have a timestamp and keys like "channel0", "channel1", … "channel11"
 function transformSensorData(data: SensorData[]) {
-    return data.map((entry) => {
-        const transformed: Record<string, number | string> = {
-            timestamp: entry.timestamp,
-        };
-        entry.values.forEach((value, index) => {
-            transformed[`channel${index}`] = value;
-        });
-        return transformed;
+  if (data.length === 0) {
+    console.log("No data provided to transformSensorData");
+    return [];
+  }
+  const transformedData = data.map((entry, index) => {
+    const transformed: Record<string, number | string> = {
+      time: index, // Use index as a simple time increment (in seconds)
+    };
+    entry.values.slice(0, 6).forEach((value, i) => {
+      transformed[`channel${i}`] = value;
     });
+    return transformed;
+  });
+
+//   console.log("Transformed Chart Data:", transformedData);
+  return transformedData;
 }
-export function HealthChart({ data }: SensorChartProps) {
+
+function getDynamicDomain(data: SensorData[], channels: number[]) {
+  if (!data.length) return [0, 1];
+  const vals = data.flatMap((d) => channels.map((ch) => d.values[ch]));
+  const max = Math.max(...vals, 1);
+  return [0, max * 1.1]; // 10 % head-room
+}
+
+function buildChartData(
+  data: SensorData[],
+  channels: number[],
+): Record<string, number | string>[] {
+  return data.map((row, idx) => {
+    const o: Record<string, number | string> = { time: idx };
+    channels.forEach((ch) => {
+      o[`channel${ch}`] = row.values[ch];
+    });
+    return o;
+  });
+}
+
+
+export function HealthChart({data,channels}: ChannelChartProps) {
 
     
-    const chartData = transformSensorData(data);
-
+const [yMin, yMax] = getDynamicDomain(data,channels);
+const chartData = buildChartData(data,channels);
 
     return (
-        <ChartContainer config={chartConfig} className="min-h-[100px] max-h-screen">
-            
+       <div className="h-full w-full">
+       <ChartContainer config={chartConfig} className="h-full w-full">
+             <ResponsiveContainer width="100%" height="100%">
             <AreaChart
                 accessibilityLayer
                 data={chartData}
-                margin={{
-                    left: 12,
-                    right: 12,
-                }}
-               //width={100}      // Set width to 1000px or any other value
-                //height={100}      // Set height to 500px or any other value
+                 margin={{ top: 10, right: 10, left: 10, bottom: 20 }}
             >
                 <CartesianGrid vertical={false} />
                 {/* { <XAxis
@@ -83,19 +115,26 @@ export function HealthChart({ data }: SensorChartProps) {
                         new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                     }
                 /> } */}
+                
                  <YAxis 
                         tickLine={false}
                         axisLine={false}
-                        domain={['auto', 'auto']}  // Autoscale domain
+                        domain={[yMin, yMax]}  // Autoscale domain
                         tickMargin={10}
+                        tickFormatter={(value) => Number(value).toFixed(2)}
+                       
+                        tick={{ fill: "#000" }}
                     />
-
-                <Legend
+                 <Tooltip
+            content={<ChartTooltipContent />}
+            cursor={{ stroke: "#ccc", strokeWidth: 1 }}
+          />
+                {/* <Legend
                  layout="vertical"  
                     verticalAlign="bottom"
                     align="right"
                     wrapperStyle={{ paddingBottom: "0px" }} // Adjust spacing
-                />
+                /> */}
 
                 {channelColors.map((color, index) => {
                     const channelKey = `channel${index}`;
@@ -105,14 +144,18 @@ export function HealthChart({ data }: SensorChartProps) {
                             dataKey={channelKey}
                             type="natural"
                             fill={chartConfig[channelKey].color}
-                            fillOpacity={0.0}
+                            fillOpacity={0.1} // Subtle fill for better visibility
                             stroke={chartConfig[channelKey].color}
+                           strokeWidth={1.5} // Thicker lines for clarity
+                            dot={false}
                            
                         />
                     );
                 })}
             </AreaChart>
-       
+       </ResponsiveContainer>
         </ChartContainer>
+      </div>
     );
+  
 }

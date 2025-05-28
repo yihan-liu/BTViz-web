@@ -1,18 +1,33 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Montserrat } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { SpeedInsights } from "@vercel/speed-insights/next"
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+
+export const montserrat = Montserrat({
   subsets: ["latin"],
+  weight: ["400", "500", "700"],
+  display: "swap",
+  variable: "--font-sans",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+// const openSans = Open_Sans({
+//   variable: "--font-open-sans",
+//   subsets: ["latin"],
+//   weight: ["400", "500", "700"], // Common weights for flexibility
+// });
+
+
+// const geistSans = Geist({
+//   variable: "--font-geist-sans",
+//   subsets: ["latin"],
+// });
+
+// const geistMono = Geist_Mono({
+//   variable: "--font-geist-mono",
+//   subsets: ["latin"],
+// });
 
 export const metadata: Metadata = {
   title: "BTVIZ - SpectraDerma",
@@ -27,7 +42,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${montserrat.variable} antialiased`}
       >
         {children}
         <Toaster position="bottom-right" richColors/>
