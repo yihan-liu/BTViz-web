@@ -50,7 +50,11 @@ export default function DataPage() {
       const fetchedData: any[]= [];
       querySnapshot.forEach((doc) => {
         const data = doc.data();
-        fetchedData.push({ id: doc.id, ...(data as object) });
+        const tags = data.tags || {};
+        fetchedData.push({ id: doc.id, ...(data as object), Environment: (tags.Environment || []).join("|"), Mood: (tags.Mood|| []).join("|"), 
+          Activity:    (tags.Activity    || []).join("|"),
+          Intensity:   (tags.Intensity   || []).join("|"),
+          Other:       (tags.Other       || []).join("|"), });
       });
       console.log("Fetched Data:", fetchedData);
       setData(fetchedData);

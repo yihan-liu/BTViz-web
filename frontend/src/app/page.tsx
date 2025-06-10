@@ -1,17 +1,18 @@
 "use client"
+import React from "react";
+import TagBlock from "@/components/ui/TagBlock";
+import { uploadTagsForMeasurement } from "@/app/utils/api";
 import { SidebarProvider } from '@/components/ui/sidebar'
 import { AppSidebar } from "@/components/ui/app-sidebar"
 import { useEffect, useState, useRef} from 'react';
 import { Button } from "@/components/ui/button";
-import { Card ,
-  CardContent,
-  CardHeader,
+import { Card , CardContent, CardHeader,
   CardTitle,} from '@/components/ui/card';
   import Link from "next/link";
   import { toast } from 'sonner';
 
 import { connectToDevice, readCharacteristicValue } from './utils/BLEfunctions';
-import {setDoc, doc } from "firebase/firestore"
+import {setDoc, doc, updateDoc } from "firebase/firestore"
 import { db } from './utils/firebaseConfig';
 import { HealthChart } from './utils/HealthChart';
 import { Eye, EyeOff } from 'lucide-react';
@@ -50,13 +51,20 @@ export default function Home() {
   const [selectedService, setSelectedService] = useState<BluetoothRemoteGATTService | null>(null); 
   const [selectedServiceUUID, setSelectedServiceUUID] = useState<string>("");
   const [selectedCharacteristicUUID, setSelectedCharcteristicUUID] = useState<string>("");
-  
+  const [mounted, setMounted] = useState(false);
   const [heartRateValue, setHeartRateValue] = useState<number | null>(null);
   const [tempValue, setTempValue] = useState<number | null>(null);
   const [atmPressure, setAtmPresure] = useState<number | null>(null);
   const [relativeHumidity, setRelativeHummidity] = useState<number | null>(null);
   const [pulseOximetry, setPulseOximetry] = useState<number | null>(null);
   const MAX_CHART_BUFFER_SIZE = 500;
+  const [currentTags, setCurrentTags] = useState<Record<string, string[]>>({
+  Environment: [],
+  Mood: [],
+  Activity: [],
+  Intensity: [],
+  Other: [],
+});
   
 
  interface NotificationEntry {
@@ -65,16 +73,6 @@ export default function Home() {
     data: number[];
   }
 
-useEffect(() => {
-  const stored = localStorage.getItem("bleProfiles");
-  if (stored) {
-    try {
-      setProfiles(JSON.parse(stored));      // ["SpectraDerma", "MySensor", …]
-    } catch {
-      /* ignore JSON errors */
-    }
-  }
-}, []);
 
 useEffect(() => {
   localStorage.setItem("bleProfiles", JSON.stringify(profiles));
@@ -87,6 +85,17 @@ useEffect(() => {
   sensorDataRef.current = sensorData;
 }, [sensorData]);
 
+useEffect(() => {
+  const stored = localStorage.getItem("bleProfiles");
+  if (stored) {
+    try {
+      setProfiles(JSON.parse(stored));  // ["SpectraDerma", "MySensor", …]
+    } catch {
+      /* ignore JSON errors */
+    }
+  }
+  setMounted(true); 
+}, []);
 
 // Set up the 5-second interval only once on component mount
 useEffect(() => {
@@ -120,6 +129,42 @@ function deleteProfile(name: string) {
  
 
 
+  async function handleTagsUpload(selectedTags: Record<string, string[]>) {
+  console.log("▶ Page: handleTagsUpload fired with", selectedTags);
+
+  if (!deviceName) {
+    console.log("▶ Page: no deviceName, calling toast.error");
+    toast.error("Please connect or select a device first.");
+    return;
+  }
+
+  const now = new Date().toISOString();
+  const tagDocId = `${deviceName}__${now}`;
+  console.log("▶ Page: about to call setDoc");
+  const timeoutId = setTimeout(() => {
+    console.error("‼ setDoc timed out (>5s), possibly due to network or rules preventing writing");
+    alert("⚠️ setDoc timed out, please check your network or security rules");
+  }, 5000);
+
+  try {
+    await setDoc(
+      doc(db, "measurementTags", tagDocId),
+      { deviceName, timestamp: now, tags: selectedTags },
+      { merge: true }
+    );
+    clearTimeout(timeoutId);
+    console.log("▶ Page: setDoc returned successfully");
+    alert("✅ setDoc succeeded");
+    toast.success("Labels have been uploaded to Firestore");
+  } catch (err: any) {
+    clearTimeout(timeoutId);
+    console.error("▶ Page: Firestore write failed with error:", err);
+    alert("❌ setDoc error: " + err.message);
+    toast.error("Labels upload failed: Please try again later");
+  }
+}
+
+
 
   async function handleScan() {
     // if (!selectedService || !selectedCharacteristic) {
@@ -145,7 +190,6 @@ function deleteProfile(name: string) {
     } else{
       setIsConnected(false);
     }
-  
     bluetoothDevice.addEventListener("gattserverdisconnected", ()=>{
       setIsConnected(false);
       setDevice(null);
@@ -197,7 +241,8 @@ function deleteProfile(name: string) {
   const batchData = {
     batchTimestamp: Date.now(),
     notifications: buffer,
-    deviceName: deviceName
+    deviceName: deviceName,
+    tags: currentTags,
   };
 
   try {
@@ -267,15 +312,18 @@ function deleteProfile(name: string) {
         {/* ——— RIGHT (main) ——— */}
         <main className="flex-1 flex flex-col overflow-y-auto p-6 gap-6">
         <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold">
-  {isConnected
-    ? (
-      <>Connected to <span className="text-primary">{deviceName || "Unknown Device"}</span></>
-    )
-    : (
-      <>Not connected to <span className="text-muted-foreground">{deviceName || "any device"}</span></>
-    )}
-</h2>
+            {mounted && (
+  <h2 className="text-2xl font-bold">
+    {isConnected
+      ? (
+        <>Connected to <span className="text-primary">{deviceName || "Unknown Device"}</span></>
+      )
+      : (
+        <>Not connected to <span className="text-muted-foreground">{deviceName || "any device"}</span></>
+      )}
+  </h2>
+)}
+
           <Button
               onClick={() => setShowChart(prev => !prev)}
               className="bg-gray-700 text-white py-2 px-4 border-2 border-gray-700 hover:bg-gray-600 transition-all duration-300"
@@ -367,6 +415,23 @@ function deleteProfile(name: string) {
             </Card>
             )
           )}
+          <div className="mt-6 grid grid-cols-3 gap-6">
+            <div className="col-span-2"></div>
+            <div className="col-span-1">
+              <Card className="flex flex-col overflow-hidden rounded-2xl border border-border/60 bg-background/70 backdrop-blur shadow-lg">
+                <CardHeader className="p-4">
+                  <CardTitle>Add Tags</CardTitle>
+                </CardHeader>
+                <CardContent className="p-4">
+                  <TagBlock onUpload={(tags) => {
+                    console.log("update currentTags:", tags);
+                    setCurrentTags(tags);
+                    toast.success("The tags have been applied, and the next data upload will include these tags.");}}/>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+
         </main>
         </div>
     </SidebarProvider>

@@ -44,8 +44,8 @@ export default function RootLayout({
       <body
         className={`${montserrat.variable} antialiased`}
       >
-        {children}
         <Toaster position="bottom-right" richColors/>
+        {children}
         <SpeedInsights />
       </body>
     </html>
