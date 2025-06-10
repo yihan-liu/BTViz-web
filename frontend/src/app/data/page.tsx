@@ -87,14 +87,14 @@ export default function DataPage() {
     for (let i = 0; i < dataArrayLength; i++) {
       dataHeaders.push(`data_${i}`);
     } 
-    const headers = ["id","timestamp","notificationTimestamp","deviceName",...dataHeaders];
+    const headers = ["id","timestamp","notificationTimestamp","deviceName","Environment","Mood","Actiivty","Intensity","Other",...dataHeaders];
     const csvHeader = headers.join(",") + "\n";
 
 
 
   const rows: string[] = [];
   for (const doc of fetchedData) {
-    const { id, batchTimestamp, notifications, deviceName } = doc;
+    const { id, batchTimestamp, notifications, deviceName, Environment = "", Mood = "", Activity = "", Intensity = "", Other = "" } = doc;
     if (notifications && notifications.length > 0) {
       for (const notification of notifications) {
         const notifTimestamp = notification.timestamp || "";
@@ -109,12 +109,12 @@ export default function DataPage() {
           }
           dataValues.push(val);
         }
-        const row = [id, batchTimestamp, notifTimestamp, deviceName, ...dataValues];
+        const row = [id, batchTimestamp, notifTimestamp, deviceName, Environment, Mood, Activity, Intensity, Other, ...dataValues];
         rows.push(row.join(","));
       }
     } else {
       const emptyData = Array(dataArrayLength).fill("");
-      const row = [id, batchTimestamp, "", ...emptyData];
+      const row = [id, batchTimestamp, "",deviceName, Environment, Mood, Activity, Intensity, Other, ...emptyData];
       rows.push(row.join(","));
     }
   }
