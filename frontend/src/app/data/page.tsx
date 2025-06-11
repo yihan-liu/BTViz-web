@@ -24,8 +24,8 @@ export default function DataPage() {
   const [isClient, setIsClient] = useState(false);
   const [chartKey, setChartKey] = useState(0);
   const [data, setData] = useState<any[]>([]);
-  const [startTime, setStartTime] = useState("09:00");
-  const [endTime, setEndTime] = useState("17:00");
+  const [startTime, setStartTime] = useState("08:00");
+  const [endTime, setEndTime] = useState("20:00");
   
   useEffect(() => {
     setIsClient(true); // Ensure Chart.js only loads on client

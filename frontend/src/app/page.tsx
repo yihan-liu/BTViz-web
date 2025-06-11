@@ -75,8 +75,9 @@ export default function Home() {
 
 
 useEffect(() => {
+  if (!mounted) return;   // don’t write until after we’ve loaded once
   localStorage.setItem("bleProfiles", JSON.stringify(profiles));
-}, [profiles]);
+}, [profiles, mounted]);
   const notificationBuffer: NotificationEntry[] = [];
 const sensorDataRef = useRef(sensorData);
 
