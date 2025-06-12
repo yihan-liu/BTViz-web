@@ -5,7 +5,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { SpeedInsights } from "@vercel/speed-insights/next"
 
 
-export const montserrat = Montserrat({
+const montserrat = Montserrat({
   subsets: ["latin"],
   weight: ["400", "500", "700"],
   display: "swap",

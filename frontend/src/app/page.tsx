@@ -25,6 +25,7 @@ import {
   Droplets,
 } from "lucide-react";
 import DashboardCard from "@/components/ui/dashboardCard";
+import TagInputs from "@/components/ui/taginputs";
 
 
 export default function Home() {
@@ -65,7 +66,15 @@ export default function Home() {
   Intensity: [],
   Other: [],
 });
-  
+const categories: string[] = Object.keys(currentTags);
+
+const allOptions: Record<string, string[]> = {
+    Environment: ["Indoor", "Outdoor", "Lab", "Field"],
+    Mood: ["Happy", "Stressed", "Calm", "Anxious"],
+    Activity: ["Resting", "Walking", "Running", "Cycling"],
+    Intensity: ["Low", "Moderate", "High", "Max"],
+    Other: ["Test", "Control", "Baseline", "Custom"]
+  };
 
  interface NotificationEntry {
     // maybe wont work might need timestamp: date()
@@ -129,41 +138,7 @@ function deleteProfile(name: string) {
 
  
 
-
-  async function handleTagsUpload(selectedTags: Record<string, string[]>) {
-  console.log("▶ Page: handleTagsUpload fired with", selectedTags);
-
-  if (!deviceName) {
-    console.log("▶ Page: no deviceName, calling toast.error");
-    toast.error("Please connect or select a device first.");
-    return;
-  }
-
-  const now = new Date().toISOString();
-  const tagDocId = `${deviceName}__${now}`;
-  console.log("▶ Page: about to call setDoc");
-  const timeoutId = setTimeout(() => {
-    console.error("‼ setDoc timed out (>5s), possibly due to network or rules preventing writing");
-    alert("⚠️ setDoc timed out, please check your network or security rules");
-  }, 5000);
-
-  try {
-    await setDoc(
-      doc(db, "measurementTags", tagDocId),
-      { deviceName, timestamp: now, tags: selectedTags },
-      { merge: true }
-    );
-    clearTimeout(timeoutId);
-    console.log("▶ Page: setDoc returned successfully");
-    alert("✅ setDoc succeeded");
-    toast.success("Labels have been uploaded to Firestore");
-  } catch (err: any) {
-    clearTimeout(timeoutId);
-    console.error("▶ Page: Firestore write failed with error:", err);
-    alert("❌ setDoc error: " + err.message);
-    toast.error("Labels upload failed: Please try again later");
-  }
-}
+   
 
 
 
@@ -424,7 +399,10 @@ function deleteProfile(name: string) {
                   <CardTitle>Add Tags</CardTitle>
                 </CardHeader>
                 <CardContent className="p-4">
-                  <TagBlock onUpload={(tags) => {
+                  <TagInputs 
+                  categories = {categories}
+                  allOptions = {allOptions}
+                  onApply={tags => {
                     console.log("update currentTags:", tags);
                     setCurrentTags(tags);
                     toast.success("The tags have been applied, and the next data upload will include these tags.");}}/>
