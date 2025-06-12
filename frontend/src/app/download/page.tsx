@@ -1,6 +1,5 @@
 "use client"; // Required for using useState and other hooks in Next.js 13+ App Router
 import { useState,useEffect } from "react";
-import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
@@ -16,10 +15,13 @@ import { Calendar as CalendarIcon , Clock} from "lucide-react"
 import { collection, addDoc, setDoc, doc, getDocs, getDoc,query, where,DocumentData,documentId } from "firebase/firestore"
 import { toast } from 'sonner';
 import { db } from "../utils/firebaseConfig";
+import { SidebarProvider } from '@/components/ui/sidebar';
+import { AppSidebar } from "@/components/ui/app-sidebar"
 
 
 
-export default function DataPage() {
+export default function DataPage(){
+
   const [date, setDate] = React.useState<Date | undefined>(new Date())
   const [isClient, setIsClient] = useState(false);
   const [chartKey, setChartKey] = useState(0);
@@ -67,7 +69,7 @@ export default function DataPage() {
 
 
 
-  const handleDownloadClick = async() => {
+  const handleDownload = async() => {
     const fetchedData = await fetchData();
     if (!fetchedData || fetchedData.length === 0) {
       toast.error("No data available to download.");
@@ -143,80 +145,63 @@ export default function DataPage() {
 
  
   return (
-    <div className="w-full flex-wrap min-h-screen flex flex-col overflow-y-auto p-4">
-      <div className="w-full flex-grow overflow-y-auto">
-      
-      <Card className="w-full h-full p-2 mb-2 flex-shrink-0 bg-white shadow-sm rounded-sm">
-        <CardHeader> 
-            <CardTitle className="text-2xl">Select a Date</CardTitle>
-            <CardDescription className="text-m">Choose a day to view the data and click Download to download data</CardDescription>
-        </CardHeader>
+      <div className="flex w-screen">
+        <main className="flex-1 flex flex-col overflow-y-auto p-6 gap-6 bg-background">
+          {/* Page Title */}
+          <h2 className="text-2xl font-bold">Download Data</h2>
 
-          <CardContent>
-          <div className="flex items-center space-x-4">
-                  <Popover>
+          {/* Date & Time Picker Card */}
+          <Card className="rounded-2xl border border-border/60 bg-white shadow-lg">
+            <CardHeader className="p-4">
+              <CardTitle className="text-xl">Select Date & Time</CardTitle>
+              <CardDescription>Choose a day and time range to download CSV.</CardDescription>
+            </CardHeader>
+            <CardContent className="p-4 space-y-4">
+              <div className="flex flex-wrap gap-4 items-center">
+                <Popover>
                   <PopoverTrigger asChild>
-                    <Button
-                      variant={"outline"}
-                      className={cn(
-                        "w-[280px] justify-start text-left font-normal",
-                        !date && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {date ? format(date, "PPP") : <span>Pick a date</span>}
+                    <Button variant="outline" className="flex items-center gap-2">
+                      <CalendarIcon />
+                      {format(date, 'PPP')}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
+                  <PopoverContent className="p-0 w-auto">
                     <Calendar
                       mode="single"
                       selected={date}
                       onSelect={setDate}
-                      initialFocus
                     />
                   </PopoverContent>
                 </Popover>
-                <div className="flex items-center space-x-2">
-                <div className="flex flex-col">
-                  <label htmlFor="startTime" className="text-sm font-medium">Start Time</label>
-                  <div className="flex items-center border rounded px-2 py-1">
-                    <Clock className="w-4 h-4 mr-2" />
-                    <input
-                      type="time"
-                      id="startTime"
-                      value={startTime}
-                      onChange={(e) => setStartTime(e.target.value)}
-                      className="bg-transparent outline-none"
-                    />
+                {[
+                  { label: 'Start', value: startTime, set: setStartTime },
+                  { label: 'End', value: endTime, set: setEndTime }
+                ].map(({ label, value, set }) => (
+                  <div key={label} className="flex flex-col">
+                    <label className="text-sm font-medium">{label} Time</label>
+                    <div className="flex items-center border rounded px-3 py-1">
+                      <Clock className="mr-2" />
+                      <input
+                        type="time"
+                        value={value}
+                        onChange={e => set(e.target.value)}
+                        className="outline-none"
+                      />
+                    </div>
                   </div>
-                </div>
-
-                <div className="flex flex-col">
-                  <label htmlFor="endTime" className="text-sm font-medium">End Time</label>
-                  <div className="flex items-center border rounded px-2 py-1">
-                    <Clock className="w-4 h-4 mr-2" />
-                    <input
-                      type="time"
-                      id="endTime"
-                      value={endTime}
-                      onChange={(e) => setEndTime(e.target.value)}
-                      className="bg-transparent outline-none"
-                    />
-                  </div>
-                </div>
+                ))}
+                <Button
+                  onClick={handleDownload}
+                  className="bg-black text-white py-2 px-4 hover:bg-gray-800"
+                >
+                  Download CSV
+                </Button>
               </div>
+            </CardContent>
+            <CardFooter className="p-4"></CardFooter>
+          </Card>
+        </main>
+      </div>
 
-                <Button onClick={handleDownloadClick}
-              className="bg-black text-white py-2 px-2  border-2 border-black hover:text-black transition-all duration-300">
-                {"Download"}
-            </Button>
-          </div>
-          </CardContent>
-          <CardFooter>
-
-          </CardFooter>
-      </Card>
-       </div>
-    </div>
   );
 }

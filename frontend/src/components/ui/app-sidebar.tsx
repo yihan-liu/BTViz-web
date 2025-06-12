@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { CardTitle, CardDescription } from '@/components/ui/card';
-import { HardDrive, MoreHorizontal, Trash2, Download } from "lucide-react";
+import { HardDrive, MoreHorizontal, Trash2, Download,ArrowUpRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
@@ -27,6 +27,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
+import Link from 'next/link';
 
 interface AppSidebarProps {
   /** BLE state */
@@ -98,7 +99,7 @@ export const AppSidebar: FC<AppSidebarProps> = ({
         "group flex w-full items-center rounded-md px-3 py-2 text-sm transition-colors",
         active
           ? "bg-primary/10 font-semibold"
-          : "hover:bg-accent/50",
+          : "hover:bg-accent/100",
       )}
     >
       {/* main click area */}
@@ -135,19 +136,31 @@ export const AppSidebar: FC<AppSidebarProps> = ({
   );
 })}
   </div>
-  {/* <div className="mt-4 mb-1 text-sm font-medium text-black">Data</div> */}
+ 
 
-  {/* <div className="flex flex-col gap-0.5 pl-3">
-    <button
-      //onClick={}
-      className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm
-                 text-muted-foreground hover:bg-accent/50 hover:text-foreground
-                 transition-colors"
-    >
-      <Download className="h-4 w-4 shrink-0" />
-      Download data
-    </button>
-  </div> */}
+  {/* — Download Link Section — */}
+      <div className="mt-6 mb-1 text-sm font-medium text-black">Quick Actions</div>
+          <div className="flex flex-col gap-0.5 pl-3">
+            <Link
+              href="/download"
+              className="
+                group flex w-full items-center gap-2 rounded-md
+                px-3 py-2 text-sm text-black
+                hover:bg-accent/100
+                transition-colors
+              "
+            >
+              <Download className="h-4 w-4 shrink-0 text-black" />
+              <span className="text-black">Download Data</span>
+              <ArrowUpRight
+                className="
+                  ml-auto h-4 w-4 text-black
+                  opacity-0 group-hover:opacity-100
+                  transition-opacity
+                "
+              />
+            </Link>
+          </div>
 </SidebarContent>
 
 

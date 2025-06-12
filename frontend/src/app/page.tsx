@@ -1,7 +1,5 @@
 "use client"
 import React from "react";
-import TagBlock from "@/components/ui/TagBlock";
-import { uploadTagsForMeasurement } from "@/app/utils/api";
 import { SidebarProvider } from '@/components/ui/sidebar'
 import { AppSidebar } from "@/components/ui/app-sidebar"
 import { useEffect, useState, useRef} from 'react';
@@ -64,7 +62,8 @@ export default function Home() {
   Mood: [],
   Activity: [],
   Intensity: [],
-  Other: [],
+  Time: [],
+  Other: []
 });
 const categories: string[] = Object.keys(currentTags);
 
@@ -73,6 +72,7 @@ const allOptions: Record<string, string[]> = {
     Mood: ["Happy", "Stressed", "Calm", "Anxious"],
     Activity: ["Resting", "Walking", "Running", "Cycling"],
     Intensity: ["Low", "Moderate", "High", "Max"],
+    Time: ["Morning","Noon","Afternoon","Evening","Night"],
     Other: ["Test", "Control", "Baseline", "Custom"]
   };
 

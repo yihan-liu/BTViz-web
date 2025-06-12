@@ -19,7 +19,9 @@ export default function TagInputs({ categories, allOptions, onApply }: TagInputs
   useEffect(() => {
     const newS: Record<string, string[]> = {};
     categories.forEach(cat => {
-      const v = values[cat].toLowerCase();
+      const raw = values[cat] || "";
+      const v = raw.toLowerCase();
+
       newS[cat] = allOptions[cat]
         .filter(opt => opt.toLowerCase().includes(v))
         .slice(0, 5);
