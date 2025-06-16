@@ -75,10 +75,13 @@ export const AppSidebar: FC<AppSidebarProps> = ({
       className={`${'bg-white text-black'} border-r`}
     >
       <SidebarHeader className="p-4 space-y-2">
+        <Link href={"/"}>
+
         <div className="flex items-center space-x-2">
           <Bluetooth className={`h-6 w-6 ${ 'text-purple-500'}`} />
           <CardTitle className="text-2xl font-bold">BLE Dashboard</CardTitle>
         </div>
+        </Link>
       </SidebarHeader>
 
        

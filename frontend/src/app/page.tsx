@@ -30,7 +30,7 @@ export default function Home() {
   // global consts do not touch
   const optionalServiceUUID: number =   0xACEF          //  "0000ACEF-0000-1000-8000-00805F9B34FB"         
   const optionalCharacteristicUUID: number = 0xFF01     //  "0000FF01-0000-1000-8000-00805F9B34FB"    
-   const [profiles, setProfiles] = useState<string[]>([]);    // all saved
+  const [profiles, setProfiles] = useState<string[]>([]);    // all saved
 
   // STATE HOOKS
   const[deviceName, setDeviceName] = useState<string>("");
@@ -222,15 +222,17 @@ function deleteProfile(name: string) {
   };
 
   try {
-    const currentDate = new Date().toISOString();
-
-    const docRef = doc(db, "spectradermadata", currentDate);
-    // console.log(batchData);
-    await setDoc(docRef, batchData);
-    
-    // console.log("Batch data sent to Firebase with ID:", docRef.id);
+    console.log("Sending batch:", batchData)
+    const resp = await fetch("/api/upload", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(batchData),
+    });
+  
   } catch (error) {
-    console.error("Error sending data to Firebase:", error);
+    console.error("Error sending data to API Route:", error);
     throw error;
   }
 }
@@ -281,10 +283,7 @@ function deleteProfile(name: string) {
             setDeviceName={setDeviceName}
             onDeleteProfile={deleteProfile}
         />
-            <div>
-                <Link href="/data"> </Link>
-      `     </div>
-        
+                   
         {/* ——— RIGHT (main) ——— */}
         <main className="flex-1 flex flex-col overflow-y-auto p-6 gap-6">
         <div className="flex items-center justify-between">

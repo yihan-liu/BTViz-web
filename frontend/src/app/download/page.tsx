@@ -1,9 +1,9 @@
 "use client"; // Required for using useState and other hooks in Next.js 13+ App Router
-import { useState,useEffect } from "react";
+import { useState,useEffect,useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
-import { format } from "date-fns/format";
+import { subDays, startOfDay,format, endOfDay } from "date-fns";
 import React from "react";
 import {
   Popover,
@@ -12,16 +12,25 @@ import {
 } from "@/components/ui/popover"
 import { cn } from "@/lib/utils"
 import { Calendar as CalendarIcon , Clock} from "lucide-react"
-import { collection, addDoc, setDoc, doc, getDocs, getDoc,query, where,DocumentData,documentId } from "firebase/firestore"
+import { collection,getDocs,query,where, documentId, onSnapshot,Timestamp,getCountFromServer} from "firebase/firestore"
 import { toast } from 'sonner';
 import { db } from "../utils/firebaseConfig";
-import { SidebarProvider } from '@/components/ui/sidebar';
+import dynamic from "next/dynamic";
+// import useLast30ViaCounts from "@/hooks/useLast30ViaCounts";
+// import DailyCountsChart from "@/components/ui/dailyDataChart";
+import { SidebarProvider } from '@/components/ui/sidebar'
 import { AppSidebar } from "@/components/ui/app-sidebar"
 
-
-
 export default function DataPage(){
-
+  
+  //Sidebar State Variables
+  const[deviceName, setDeviceName] = useState<string>("");
+  const [open, setOpen] = useState(false);
+  const [tempDeviceName, setTempDeviceName] = useState("");
+  const [isConnected, setIsConnected] = useState<boolean>(false);
+  const [profiles, setProfiles] = useState<string[]>([]);
+  
+  // const rows = useLast30ViaCounts();    
   const [date, setDate] = React.useState<Date | undefined>(new Date())
   const [isClient, setIsClient] = useState(false);
   const [chartKey, setChartKey] = useState(0);
@@ -35,16 +44,30 @@ export default function DataPage(){
   }, []);
 
 
+function deleteProfile(name: string) {
+  setProfiles((prev) => {
+    const next = prev.filter((p) => p !== name);
+    // if we just deleted the active profile, clear or pick the first remaining
+    if (name === deviceName) setDeviceName(next[0] ?? "");
+    return next;
+  });
+}
+
+
+  function handleScan(){
+    return
+  }
+
+
   const fetchData = async() =>{
     try{
-      
       const formattedDate = date?.toISOString().substring(0, 10);
       const startDate = new Date(`${formattedDate}T${startTime}:00`);  
       const endDate = new Date(`${formattedDate}T${endTime}:00`);  
       const startTimestamp = startDate.toISOString();
       const endTimestamp = endDate.toISOString();
      
-      const q = query(collection(db, "spectradermadata"),where(documentId(),'>=',startTimestamp),where(documentId(),'<',endTimestamp));
+      const q = query(collection(db, "spectraderma"),where(documentId(),'>=',startTimestamp),where(documentId(),'<',endTimestamp));
 
       const querySnapshot = await getDocs(q);
       console.log(querySnapshot);
@@ -66,8 +89,6 @@ export default function DataPage(){
     toast.error("Error fetching data: " + error.message);
   }
 };
-
-
 
   const handleDownload = async() => {
     const fetchedData = await fetchData();
@@ -91,8 +112,6 @@ export default function DataPage(){
     } 
     const headers = ["id","timestamp","notificationTimestamp","deviceName","Environment","Mood","Actiivty","Intensity","Other",...dataHeaders];
     const csvHeader = headers.join(",") + "\n";
-
-
 
   const rows: string[] = [];
   for (const doc of fetchedData) {
@@ -125,9 +144,6 @@ export default function DataPage(){
   const csvContent = csvHeader + csvRowsString;
   const encodedUri = encodeURI("data:text/csv;charset=utf-8," + csvContent);
 
-
-
-
     const link = document.createElement("a")
     link.setAttribute("href", encodedUri);
     link.setAttribute(
@@ -141,11 +157,39 @@ export default function DataPage(){
 
 
 
+
   
 
  
   return (
+    <SidebarProvider>
       <div className="flex w-screen">
+
+      <AppSidebar
+          isConnected={isConnected}
+          onScan={handleScan}
+          open={open}
+          setOpen={setOpen}
+          tempDeviceName={tempDeviceName}
+          setTempDeviceName={setTempDeviceName}
+    
+        onSaveProfile={() => {
+        // add to list if it’s new, then make it the active device
+        if (tempDeviceName && !profiles.includes(tempDeviceName)) {
+          setProfiles([...profiles, tempDeviceName]);
+        }
+        setDeviceName(tempDeviceName);   // active/selected profile
+        setOpen(false);                  // close the dialog
+        }}
+    
+        profiles={profiles}
+        deviceName={deviceName}
+        setDeviceName={setDeviceName}
+        onDeleteProfile={deleteProfile}
+      />
+
+
+
         <main className="flex-1 flex flex-col overflow-y-auto p-6 gap-6 bg-background">
           {/* Page Title */}
           <h2 className="text-2xl font-bold">Download Data</h2>
@@ -197,11 +241,17 @@ export default function DataPage(){
                   Download CSV
                 </Button>
               </div>
+              <div>
+                
+              </div>
             </CardContent>
             <CardFooter className="p-4"></CardFooter>
           </Card>
+          {/* <Card>
+            {isClient && <DailyCountsChart rows={rows} />}
+          </Card> */}
         </main>
       </div>
-
+    </SidebarProvider>
   );
 }
