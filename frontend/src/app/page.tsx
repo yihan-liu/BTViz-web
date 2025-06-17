@@ -10,8 +10,6 @@ import { Card , CardContent, CardHeader,
   import { toast } from 'sonner';
 
 import { connectToDevice, readCharacteristicValue } from './utils/BLEfunctions';
-import {setDoc, doc, updateDoc } from "firebase/firestore"
-import { db } from './utils/firebaseConfig';
 import { HealthChart } from './utils/HealthChart';
 import { Eye, EyeOff } from 'lucide-react';
 import { DEVICE_UUIDS, KnownDeviceName } from './utils/uuid-map';
@@ -24,19 +22,24 @@ import {
 } from "lucide-react";
 import DashboardCard from "@/components/ui/dashboardCard";
 import TagInputs from "@/components/ui/taginputs";
-
+import { useProfile } from "@/app/context/ProfileContext";
 
 export default function Home() {
-  // global consts do not touch
-  const optionalServiceUUID: number =   0xACEF          //  "0000ACEF-0000-1000-8000-00805F9B34FB"         
-  const optionalCharacteristicUUID: number = 0xFF01     //  "0000FF01-0000-1000-8000-00805F9B34FB"    
-  const [profiles, setProfiles] = useState<string[]>([]);    // all saved
-
-  // STATE HOOKS
-  const[deviceName, setDeviceName] = useState<string>("");
-  const [open, setOpen] = useState(false);
-  const [tempDeviceName, setTempDeviceName] = useState("");
-  const [device, setDevice] = useState<BluetoothDevice | null>(null);
+  // global consts do not touch  
+  //Devices Profile
+  const {
+      profiles,
+      setProfiles,
+      deviceName,
+      setDeviceName,
+      open,
+      setOpen,
+      tempDeviceName,
+      setTempDeviceName,
+      device,
+      setDevice,
+      deleteProfile,
+} = useProfile();
 
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [isConnected, setIsConnected] = useState<boolean>(false);
@@ -76,6 +79,7 @@ const allOptions: Record<string, string[]> = {
     Other: ["Test", "Control", "Baseline", "Custom"]
   };
 
+
  interface NotificationEntry {
     // maybe wont work might need timestamp: date()
     timestamp: number;
@@ -83,11 +87,7 @@ const allOptions: Record<string, string[]> = {
   }
 
 
-useEffect(() => {
-  if (!mounted) return;   // don’t write until after we’ve loaded once
-  localStorage.setItem("bleProfiles", JSON.stringify(profiles));
-}, [profiles, mounted]);
-  const notificationBuffer: NotificationEntry[] = [];
+const notificationBuffer: NotificationEntry[] = [];
 const sensorDataRef = useRef(sensorData);
 
 // Update the ref whenever sensorData changes
@@ -95,17 +95,7 @@ useEffect(() => {
   sensorDataRef.current = sensorData;
 }, [sensorData]);
 
-useEffect(() => {
-  const stored = localStorage.getItem("bleProfiles");
-  if (stored) {
-    try {
-      setProfiles(JSON.parse(stored));  // ["SpectraDerma", "MySensor", …]
-    } catch {
-      /* ignore JSON errors */
-    }
-  }
-  setMounted(true); 
-}, []);
+
 
 // Set up the 5-second interval only once on component mount
 useEffect(() => {
@@ -125,21 +115,6 @@ useEffect(() => {
   }, 2000); 
   return () => clearInterval(intervalId);
 }, []);
-
-
-function deleteProfile(name: string) {
-  setProfiles((prev) => {
-    const next = prev.filter((p) => p !== name);
-    // if we just deleted the active profile, clear or pick the first remaining
-    if (name === deviceName) setDeviceName(next[0] ?? "");
-    return next;
-  });
-}
-
- 
-
-   
-
 
 
   async function handleScan() {
@@ -393,7 +368,7 @@ function deleteProfile(name: string) {
           <div className="mt-6 grid grid-cols-3 gap-6">
             <div className="col-span-2"></div>
             <div className="col-span-1">
-              <Card className="flex flex-col overflow-hidden rounded-2xl border border-border/60 bg-background/70 backdrop-blur shadow-lg">
+              <Card className="flex flex-col h-full overflow-hidden rounded-2xl border border-border/60 bg-background/70 backdrop-blur shadow-lg ">
                 <CardHeader className="p-4">
                   <CardTitle>Add Tags</CardTitle>
                 </CardHeader>

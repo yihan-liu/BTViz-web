@@ -4,8 +4,7 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import React, { useState } from "react";
-import { SidebarProvider } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/ui/app-sidebar";
+import { ProfileProvider } from "@/app/context/ProfileContext"; 
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -25,7 +24,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body className={`${montserrat.variable} antialiased`}>
-
+      <ProfileProvider>
           <div className="flex w-screen">
             <main className="flex-1 flex flex-col overflow-y-auto p-6 gap-6 bg-background">
               <Toaster position="bottom-right" richColors />
@@ -33,7 +32,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <SpeedInsights />
             </main>
           </div>
-
+    </ProfileProvider>
       </body>
     </html>
   );

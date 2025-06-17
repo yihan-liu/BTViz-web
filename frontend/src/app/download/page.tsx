@@ -20,16 +20,26 @@ import dynamic from "next/dynamic";
 // import DailyCountsChart from "@/components/ui/dailyDataChart";
 import { SidebarProvider } from '@/components/ui/sidebar'
 import { AppSidebar } from "@/components/ui/app-sidebar"
+import { useProfile } from "@/app/context/ProfileContext";
 
 export default function DataPage(){
   
-  //Sidebar State Variables
-  const[deviceName, setDeviceName] = useState<string>("");
-  const [open, setOpen] = useState(false);
-  const [tempDeviceName, setTempDeviceName] = useState("");
+  //Sidebar Global Variables
+  const {
+  profiles,
+  setProfiles,
+  deviceName,
+  setDeviceName,
+  open,
+  setOpen,
+  tempDeviceName,
+  setTempDeviceName,
+  device,
+  setDevice,
+  deleteProfile,
+} = useProfile();
+
   const [isConnected, setIsConnected] = useState<boolean>(false);
-  const [profiles, setProfiles] = useState<string[]>([]);
-  
   // const rows = useLast30ViaCounts();    
   const [date, setDate] = React.useState<Date | undefined>(new Date())
   const [isClient, setIsClient] = useState(false);
@@ -44,14 +54,8 @@ export default function DataPage(){
   }, []);
 
 
-function deleteProfile(name: string) {
-  setProfiles((prev) => {
-    const next = prev.filter((p) => p !== name);
-    // if we just deleted the active profile, clear or pick the first remaining
-    if (name === deviceName) setDeviceName(next[0] ?? "");
-    return next;
-  });
-}
+
+
 
 
   function handleScan(){
@@ -206,7 +210,7 @@ function deleteProfile(name: string) {
                   <PopoverTrigger asChild>
                     <Button variant="outline" className="flex items-center gap-2">
                       <CalendarIcon />
-                      {format(date, 'PPP')}
+                      {format(date as Date, 'PPP')}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="p-0 w-auto">

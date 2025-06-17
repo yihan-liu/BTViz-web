@@ -3,7 +3,7 @@
 import { ChartContainer, ChartConfig } from "@/components/ui/chart";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer} from "recharts";
 import { ChartTooltipContent } from "@/components/ui/chart";
-import { split } from "postcss/lib/list";
+
 
 
 interface SensorData {
