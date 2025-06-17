@@ -168,7 +168,6 @@ export default function DataPage(){
   return (
     <SidebarProvider>
       <div className="flex w-screen">
-
       <AppSidebar
           isConnected={isConnected}
           onScan={handleScan}
@@ -191,13 +190,20 @@ export default function DataPage(){
         setDeviceName={setDeviceName}
         onDeleteProfile={deleteProfile}
       />
-
-
-
-        <main className="flex-1 flex flex-col overflow-y-auto p-6 gap-6 bg-background">
+      <main className="flex-1 flex flex-col p-6 gap-6">
           {/* Page Title */}
-          <h2 className="text-2xl font-bold">Download Data</h2>
-
+          <div className="sticky top-0 bg-background z-10 py-2">
+          <h2 className="text-3xl font-bold">
+            {isConnected
+              ? (
+              <>Data <span className="text-primary">{deviceName || "Unknown Device"}</span></>
+                )
+                :(
+              <>Data <span className="text-muted-foreground">{deviceName || "any device"}</span></>
+                )}
+                  </h2>
+        
+        </div>
           {/* Date & Time Picker Card */}
           <Card className="rounded-2xl border border-border/60 bg-white shadow-lg">
             <CardHeader className="p-4">
