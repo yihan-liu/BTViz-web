@@ -15,12 +15,12 @@ import { Calendar as CalendarIcon , Clock} from "lucide-react"
 import { collection,getDocs,query,where, documentId, onSnapshot,Timestamp,getCountFromServer} from "firebase/firestore"
 import { toast } from 'sonner';
 import { db } from "../utils/firebaseConfig";
-import dynamic from "next/dynamic";
 // import useLast30ViaCounts from "@/hooks/useLast30ViaCounts";
 // import DailyCountsChart from "@/components/ui/dailyDataChart";
 import { SidebarProvider } from '@/components/ui/sidebar'
 import { AppSidebar } from "@/components/ui/app-sidebar"
 import { useProfile } from "@/app/context/ProfileContext";
+import TimePicker from "@/components/ui/timepicker";
 
 export default function DataPage(){
   
@@ -114,16 +114,23 @@ export default function DataPage(){
     for (let i = 0; i < dataArrayLength; i++) {
       dataHeaders.push(`data_${i}`);
     } 
-    const headers = ["id","timestamp","notificationTimestamp","deviceName","Environment","Mood","Actiivty","Intensity","Other",...dataHeaders];
+    const headers = ["id","timestamp","notificationTimestamp","deviceName","Environment","Mood","Activity","Intensity","Other",...dataHeaders];
     const csvHeader = headers.join(",") + "\n";
 
   const rows: string[] = [];
   for (const doc of fetchedData) {
-    const { id, batchTimestamp, notifications, deviceName, Environment = "", Mood = "", Activity = "", Intensity = "", Other = "" } = doc;
+    const { id, batchTimestamp, notifications, deviceName} = doc;
     if (notifications && notifications.length > 0) {
       for (const notification of notifications) {
         const notifTimestamp = notification.timestamp || "";
-       
+
+        const tags        = notification.tags ?? {};
+        const Environment = (tags.Environment ?? []).join("|");
+        const Mood        = (tags.Mood        ?? []).join("|");
+        const Activity    = (tags.Activity    ?? []).join("|");
+        const Intensity   = (tags.Intensity   ?? []).join("|");
+        const Other       = (tags.Other       ?? []).join("|");
+
         const dataArray = notification.data || [];
         const dataValues = [];
         for (let i = 0; i < dataArrayLength; i++) {
@@ -139,7 +146,7 @@ export default function DataPage(){
       }
     } else {
       const emptyData = Array(dataArrayLength).fill("");
-      const row = [id, batchTimestamp, "",deviceName, Environment, Mood, Activity, Intensity, Other, ...emptyData];
+      const row = [id, batchTimestamp, "",deviceName, "", "", "", "", "", ...emptyData];
       rows.push(row.join(","));
     }
   }
@@ -190,73 +197,53 @@ export default function DataPage(){
         setDeviceName={setDeviceName}
         onDeleteProfile={deleteProfile}
       />
-      <main className="flex-1 flex flex-col p-6 gap-6">
+      <main className="flex-1 flex flex-col h-screen p-6 gap-6">
           {/* Page Title */}
           <div className="sticky top-0 bg-background z-10 py-2">
           <h2 className="text-3xl font-bold">
-            {isConnected
-              ? (
-              <>Data <span className="text-primary">{deviceName || "Unknown Device"}</span></>
-                )
-                :(
-              <>Data <span className="text-muted-foreground">{deviceName || "any device"}</span></>
-                )}
+            Data Dashboard
                   </h2>
         
         </div>
           {/* Date & Time Picker Card */}
-          <Card className="rounded-2xl border border-border/60 bg-white shadow-lg">
-            <CardHeader className="p-4">
-              <CardTitle className="text-xl">Select Date & Time</CardTitle>
-              <CardDescription>Choose a day and time range to download CSV.</CardDescription>
-            </CardHeader>
-            <CardContent className="p-4 space-y-4">
-              <div className="flex flex-wrap gap-4 items-center">
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" className="flex items-center gap-2">
-                      <CalendarIcon />
-                      {format(date as Date, 'PPP')}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="p-0 w-auto">
-                    <Calendar
-                      mode="single"
-                      selected={date}
-                      onSelect={setDate}
-                    />
-                  </PopoverContent>
-                </Popover>
-                {[
-                  { label: 'Start', value: startTime, set: setStartTime },
-                  { label: 'End', value: endTime, set: setEndTime }
-                ].map(({ label, value, set }) => (
-                  <div key={label} className="flex flex-col">
-                    <label className="text-sm font-medium">{label} Time</label>
-                    <div className="flex items-center border rounded px-3 py-1">
-                      <Clock className="mr-2" />
-                      <input
-                        type="time"
-                        value={value}
-                        onChange={e => set(e.target.value)}
-                        className="outline-none"
-                      />
-                    </div>
-                  </div>
-                ))}
-                <Button
-                  onClick={handleDownload}
-                  className="bg-black text-white py-2 px-4 hover:bg-gray-800"
-                >
-                  Download CSV
-                </Button>
-              </div>
-              <div>
-                
-              </div>
-            </CardContent>
-            <CardFooter className="p-4"></CardFooter>
-          </Card>
+<div className="grid w-full grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+<Card className="relative overflow-hidden rounded-3xl bg-white/70 backdrop-blur-sm
+                 w-full max-w-lg p-4 shadow-md">
+  <CardContent className="flex flex-col gap-2">
+    <div className="flex flex-wrap items-center gap-2">
+      {/* Date picker */}
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button size="sm" variant="outline" className="gap-2">
+            <CalendarIcon className="h-5 w-5" />   {/* icon 20 px */}
+            {format(date as Date, "PPP")}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="p-0">
+          <Calendar mode="single" selected={date} onSelect={setDate} />
+        </PopoverContent>
+      </Popover>
+
+      {/* Time pickers */}
+      <TimePicker value={startTime} onChange={setStartTime} />
+      <TimePicker value={endTime}   onChange={setEndTime} />
+
+      {/* Download button */}
+      <Button
+        size="sm"
+        onClick={handleDownload}>
+  Download
+</Button>
+
+    </div>
+  </CardContent>
+</Card>
+
+
+
+
+
+          </div>
           {/* <Card>
             {isClient && <DailyCountsChart rows={rows} />}
           </Card> */}

@@ -136,8 +136,9 @@ const chartData = buildChartData(data,channels);
                     wrapperStyle={{ paddingBottom: "0px" }} // Adjust spacing
                 /> */}
 
-                {channelColors.map((color, index) => {
-                    const channelKey = `channel${index}`;
+                {channels.map( (ch) => {
+                    const channelKey = `channel${ch}`;
+                    const color = chartConfig[channelKey]?.color || "gray";
                     return (
                         <Area
                             key={channelKey}

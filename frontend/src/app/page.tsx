@@ -22,6 +22,8 @@ import {
 import DashboardCard from "@/components/ui/dashboardCard";
 import TagInputs from "@/components/ui/taginputs";
 import { useProfile } from "@/app/context/ProfileContext";
+import ResponsiveSidebar from "@/components/ui/responsive-sidebar";
+import type { AppSidebarProps } from "@/components/ui/app-sidebar";
 
 export default function Home() {
   // global consts do not touch  
@@ -40,19 +42,14 @@ export default function Home() {
       deleteProfile,
 } = useProfile();
 
+  const [selectedChannels, setSelectedChannels] = useState<number[]>([0, 1, 2, 3, 4, 5]);
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [isConnected, setIsConnected] = useState<boolean>(false);
   const [timeConnected, setTimeConnected] = useState<Date>();
   const [sensorData, setSensorData] = useState<{ timestamp: number; values: number[] }[]>([]);
   const [showChart, setShowChart] = useState<boolean>(true);
 
-  const [characteristics, setCharacteristics] = useState<BluetoothRemoteGATTCharacteristic[]>([]);
-  const [services, setServices] = useState<BluetoothRemoteGATTService[]>([]); 
-  const [selectedCharacteristic, setSelectedCharcteristic] = useState<BluetoothRemoteGATTCharacteristic | null>(null); 
-  const [selectedService, setSelectedService] = useState<BluetoothRemoteGATTService | null>(null); 
-  const [selectedServiceUUID, setSelectedServiceUUID] = useState<string>("");
-  const [selectedCharacteristicUUID, setSelectedCharcteristicUUID] = useState<string>("");
-  const [mounted, setMounted] = useState(false);
+  
   const [heartRateValue, setHeartRateValue] = useState<number | null>(null);
   const [tempValue, setTempValue] = useState<number | null>(null);
   const [atmPressure, setAtmPresure] = useState<number | null>(null);
@@ -83,8 +80,26 @@ const allOptions: Record<string, string[]> = {
     // maybe wont work might need timestamp: date()
     timestamp: number;
     data: number[];
+    tags: Record<string, string[]>;
   }
-
+const sidebarProps: AppSidebarProps = {
+  isConnected,
+  onScan: handleScan,
+  open, setOpen,
+  tempDeviceName, setTempDeviceName,
+  onSaveProfile: () => {
+            // add to list if it’s new, then make it the active device
+            if (tempDeviceName && !profiles.includes(tempDeviceName)) {
+              setProfiles([...profiles, tempDeviceName]);
+            }
+            setDeviceName(tempDeviceName);   // active/selected profile
+            setOpen(false);                  // close the dialog
+  },
+  profiles,
+  deviceName,
+  setDeviceName,
+  onDeleteProfile: deleteProfile,
+};
 
 const notificationBuffer: NotificationEntry[] = [];
 const sensorDataRef = useRef(sensorData);
@@ -114,6 +129,17 @@ useEffect(() => {
   }, 2000); 
   return () => clearInterval(intervalId);
 }, []);
+
+const detectedChannelCount = React.useMemo(() => {
+  const first = sensorData.find((d) => Array.isArray(d.values));
+  return first?.values?.length ?? 0;
+}, [sensorData]);
+
+const currentTagsRef = useRef(currentTags);
+useEffect(() => {
+  currentTagsRef.current = currentTags;
+  console.log("updated tag ref:", currentTagsRef.current);
+}, [currentTags]);
 
 
   async function handleScan() {
@@ -174,7 +200,7 @@ useEffect(() => {
           return newData;
         });
 
-        notificationBuffer.push({ timestamp, data });
+        notificationBuffer.push({ timestamp, data, tags: currentTagsRef.current});
         // console.log(`Buffered notification at ${new Date(timestamp).toISOString()}:`, data);
       });
       
@@ -192,7 +218,6 @@ useEffect(() => {
     batchTimestamp: Date.now(),
     notifications: buffer,
     deviceName: deviceName,
-    tags: currentTags,
   };
 
   try {
@@ -235,33 +260,11 @@ useEffect(() => {
   return (
 <SidebarProvider>
     <div className='flex  w-screen '>
-      <AppSidebar
-              isConnected={isConnected}
-              onScan={handleScan}
-              open={open}
-              setOpen={setOpen}
-              tempDeviceName={tempDeviceName}
-              setTempDeviceName={setTempDeviceName}
-        
-            onSaveProfile={() => {
-            // add to list if it’s new, then make it the active device
-            if (tempDeviceName && !profiles.includes(tempDeviceName)) {
-              setProfiles([...profiles, tempDeviceName]);
-            }
-            setDeviceName(tempDeviceName);   // active/selected profile
-            setOpen(false);                  // close the dialog
-            }}
-        
-            profiles={profiles}
-            deviceName={deviceName}
-            setDeviceName={setDeviceName}
-            onDeleteProfile={deleteProfile}
-        />
-                   
+      <ResponsiveSidebar sidebarProps={sidebarProps}>               
         {/* ——— RIGHT (main) ——— */}
         <main className="flex-1 flex flex-col overflow-y-auto p-6 gap-6">
         <div className="flex items-center justify-between">
-            {mounted && (
+            
   <h2 className="text-2xl font-bold">
     {isConnected
       ? (
@@ -271,7 +274,6 @@ useEffect(() => {
         <>Not connected to <span className="text-muted-foreground">{deviceName || "any device"}</span></>
       )}
   </h2>
-)}
 
           <Button
               onClick={() => setShowChart(prev => !prev)}
@@ -319,12 +321,56 @@ useEffect(() => {
             />
           </div>
 
-          {/* Bottom Row: Graph Card */}
+         {showChart && sensorData.length > 0 && (
+  <div className="flex flex-wrap items-center gap-4 px-1 pb-2">
+    {/* Label */}
+    <span className="text-sm font-semibold text-muted-foreground">Select Channels:</span>
+
+    {/* Master checkbox: All */}
+    <label className="flex items-center gap-2 text-sm px-2 py-1 rounded hover:bg-muted transition">
+      <input
+        type="checkbox"
+        checked={selectedChannels.length === detectedChannelCount}
+        onChange={(e) => {
+          const all = Array.from({ length: detectedChannelCount }, (_, i) => i);
+          setSelectedChannels(e.target.checked ? all : []);
+        }}
+        className="accent-primary h-4 w-4"
+      />
+      All
+    </label>
+
+    {/* Individual checkboxes */}
+    {Array.from({ length: detectedChannelCount }, (_, ch) => (
+      <label
+        key={ch}
+        className="flex items-center gap-2 text-sm px-2 py-1 rounded hover:bg-muted transition"
+      >
+        <input
+          type="checkbox"
+          checked={selectedChannels.includes(ch)}
+          onChange={() =>
+            setSelectedChannels((prev) =>
+              prev.includes(ch)
+                ? prev.filter((c) => c !== ch)
+                : [...prev, ch].sort((a, b) => a - b)
+            )
+          }
+          className="accent-primary h-4 w-4"
+        />
+        Ch {ch}
+      </label>
+    ))}
+  </div>
+)}
+
+
 
 
          {showChart && sensorData.length > 0 && (
             (deviceName === "MIRAS") ? (
               <>
+            {selectedChannels.some((ch) => ch <= 5) && (
             <Card className="flex-1 flex flex-col  overflow-hidden rounded-2xl border border-border/60 bg-background/70 backdrop-blur shadow-lg">
               <CardHeader className="p-6">
                   <CardTitle>Channels 0-2</CardTitle>
@@ -332,11 +378,13 @@ useEffect(() => {
 
               <CardContent className="flex-1 min-h-0 h-full p-4 pt-0">
                 <HealthChart data={sensorData} 
-                    channels={[0, 1, 2]}
+                  channels={selectedChannels.filter((ch) => ch <= 2)}
                 />
               </CardContent>
             </Card>
+            )}
 
+            {selectedChannels.some((ch) => ch <= 5) && (
             <Card className="flex-1 flex flex-col  overflow-hidden rounded-2xl border border-border/60 bg-background/70 backdrop-blur shadow-lg">
               <CardHeader className="p-6">
                   <CardTitle>Channels 3-5</CardTitle>
@@ -344,12 +392,14 @@ useEffect(() => {
 
               <CardContent className="flex-1 min-h-0 h-full p-4 pt-0">
                 <HealthChart data={sensorData} 
-                    channels={[3,4,5]}
+                   channels={selectedChannels.filter((ch) => ch >= 3)}
                 />
               </CardContent>
             </Card>
+            )}
             </>
             ) : (
+            selectedChannels.length > 0 && (
             <Card className="flex-1 flex flex-col  overflow-hidden rounded-2xl border border-border/60 bg-background/70 backdrop-blur shadow-lg">
               <CardHeader className="p-6">
                   <CardTitle>Channels 0-5</CardTitle>
@@ -357,12 +407,12 @@ useEffect(() => {
 
               <CardContent className="flex-1 min-h-0 h-full p-4 pt-0">
                 <HealthChart data={sensorData} 
-                      channels={[0, 1, 2, 3, 4, 5]}
-      
+                       channels={selectedChannels}
                 />
               </CardContent>
             </Card>
             )
+          )
           )}
           <div className="mt-6 grid grid-cols-3 gap-6">
             <div className="col-span-2"></div>
@@ -372,19 +422,27 @@ useEffect(() => {
                   <CardTitle>Add Tags</CardTitle>
                 </CardHeader>
                 <CardContent className="p-4">
-                  <TagInputs 
-                  categories = {categories}
-                  allOptions = {allOptions}
-                  onApply={tags => {
-                    console.log("update currentTags:", tags);
-                    setCurrentTags(tags);
-                    toast.success("The tags have been applied, and the next data upload will include these tags.");}}/>
+                  <TagInputs
+                    categories={categories}
+                    allOptions={allOptions}
+                    onApply={(tags) => {
+                      // 1. make the new list globally visible *right now*
+                      currentTagsRef.current = tags;
+                      setCurrentTags(tags);
+
+                      // 2. retrofit every unsent notification already in the buffer
+                      notificationBuffer.forEach((entry) => (entry.tags = tags));
+
+                      toast.success("Tags applied — all future and queued data now include them.");
+                    }}
+                  />
                 </CardContent>
               </Card>
             </div>
           </div>
 
         </main>
+        </ResponsiveSidebar>
         </div>
     </SidebarProvider>
     );
