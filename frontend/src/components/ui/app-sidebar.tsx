@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import Link from 'next/link';
 
-interface AppSidebarProps {
+export interface AppSidebarProps {
   /** BLE state */
   isConnected: boolean;
   onScan: () => void;
@@ -51,6 +51,7 @@ interface AppSidebarProps {
   deviceName: string;                 // the current / active name
   setDeviceName: (n: string) => void;
   onDeleteProfile: (n: string) => void; 
+  forceOpen?: boolean;
 }
 
 export const AppSidebar: FC<AppSidebarProps> = ({
@@ -67,11 +68,12 @@ export const AppSidebar: FC<AppSidebarProps> = ({
        profiles,
       deviceName,
       setDeviceName,
-      onDeleteProfile
+      onDeleteProfile,
+      forceOpen = false,
 }) => {
   return (
   <Sidebar
-      collapsible="icon"
+      collapsible={forceOpen ? "none" : "icon"}
       className={`${'bg-white text-black'} border-r`}
     >
       <SidebarHeader className="p-4 space-y-2">
