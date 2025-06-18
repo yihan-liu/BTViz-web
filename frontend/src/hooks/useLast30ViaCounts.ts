@@ -13,16 +13,22 @@ interface Row { date: string; count: number }
 
 const CACHE_KEY = "dailyCountsCache";
 const ONE_DAY   = 86_400_000;                              // 24 h ms
-
+const buildZeroRows = (): Row[] =>
+  Array.from({ length: 30 }, (_, i) => ({
+    // oldest first so Firestore startAt/endAt work as written
+    date: format(subDays(new Date(), 29 - i), "yyyy-MM-dd"),
+    count: 0,
+  }));
 
 export default function useDailyCounts(): Row[] {
   /* scaffold */
   console.log("[hook] zeroRows built");
+    const zeroRows = useMemo(buildZeroRows, []);
 
   /* ---------- lazy-init state ---------- */
   const [rows, setRows] = useState<Row[]>(() => {
     console.log("[hook] lazy init");
-    if (typeof window === "undefined") return zeroRows;
+    if (typeof window === "undefined") return null;
 
     const raw = localStorage.getItem(CACHE_KEY);
     console.log("[hook] cache raw =", raw);
@@ -43,7 +49,7 @@ export default function useDailyCounts(): Row[] {
       console.warn("[hook] cache parse error", e);
     }
     console.log("[hook] no cache → zeroRows");
-    return zeroRows;
+    return null;
   });
 
   /* ---------- side-effect ---------- */
