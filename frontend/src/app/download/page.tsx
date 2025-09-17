@@ -22,6 +22,15 @@ import { AppSidebar } from "@/components/ui/app-sidebar"
 import { useProfile } from "@/app/context/ProfileContext";
 import TimePicker from "@/components/ui/timepicker";
 
+
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from "@/components/ui/select";
+
 export default function DataPage(){
   
   //Sidebar Global Variables
@@ -45,14 +54,21 @@ export default function DataPage(){
   const [isClient, setIsClient] = useState(false);
   const [chartKey, setChartKey] = useState(0);
   const [data, setData] = useState<any[]>([]);
-  const [startTime, setStartTime] = useState("08:00");
-  const [endTime, setEndTime] = useState("20:00");
+  const [startTime, setStartTime] = useState("00:01");
+  const [endTime, setEndTime] = useState("23:59");
   
+  const [selectedDevice, setSelectedDevice] = useState<string>(deviceName ?? "");
+
   useEffect(() => {
     setIsClient(true); // Ensure Chart.js only loads on client
     setChartKey((prev) => prev + 1);
   }, []);
 
+  useEffect(() => {
+    if (deviceName && deviceName !== selectedDevice) {
+      setSelectedDevice(deviceName);
+    }
+  }, [deviceName]);
 
 
 
@@ -63,7 +79,7 @@ export default function DataPage(){
   }
 
 
-  const fetchData = async() =>{
+  const fetchData = async(sourceDeviceName: string) =>{
     try{
       const formattedDate = date?.toISOString().substring(0, 10);
       const startDate = new Date(`${formattedDate}T${startTime}:00`);  
@@ -71,7 +87,9 @@ export default function DataPage(){
       const startTimestamp = startDate.toISOString();
       const endTimestamp = endDate.toISOString();
      
-      const q = query(collection(db, "spectraderma"),where(documentId(),'>=',startTimestamp),where(documentId(),'<',endTimestamp));
+      sourceDeviceName = sourceDeviceName.toLowerCase();
+
+      const q = query(collection(db, sourceDeviceName),where(documentId(),'>=',startTimestamp),where(documentId(),'<',endTimestamp));
 
       const querySnapshot = await getDocs(q);
       console.log(querySnapshot);
@@ -95,7 +113,7 @@ export default function DataPage(){
 };
 
   const handleDownload = async() => {
-    const fetchedData = await fetchData();
+    const fetchedData = await fetchData(selectedDevice);
     if (!fetchedData || fetchedData.length === 0) {
       toast.error("No data available to download.");
       return;
@@ -212,6 +230,30 @@ export default function DataPage(){
   <CardContent className="flex flex-col gap-2">
     <div className="flex flex-wrap items-center gap-2">
       {/* Date picker */}
+
+        <div className="flex items-center gap-2">
+                  <Select
+                    value={selectedDevice}
+                    onValueChange={(v) => setSelectedDevice(v)}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select device" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {profiles?.length
+                        ? profiles.map((p) => (
+                            <SelectItem key={p} value={p}>
+                              {p}
+                            </SelectItem>
+                          ))
+                        : (
+                          <SelectItem value="" disabled>
+                            No devices found
+                          </SelectItem>
+                        )}
+                    </SelectContent>
+                  </Select>
+          </div>
       <Popover>
         <PopoverTrigger asChild>
           <Button size="sm" variant="outline" className="gap-2">
@@ -227,6 +269,7 @@ export default function DataPage(){
       {/* Time pickers */}
       <TimePicker value={startTime} onChange={setStartTime} />
       <TimePicker value={endTime}   onChange={setEndTime} />
+     
 
       {/* Download button */}
       <Button
