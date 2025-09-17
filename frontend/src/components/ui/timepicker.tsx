@@ -37,8 +37,10 @@ export default function TimePicker({
     const h = String(Math.floor((i * step) / 60)).padStart(2, "0")
     const m = String((i * step) % 60).padStart(2, "0")
     return `${h}:${m}`
-  })
-
+  });
+  if (times[times.length - 1] !== "23:59") {
+    times.push("23:59");
+  }
   return (
     <Select value={value} onValueChange={onChange}>
       <SelectTrigger className={`w-[100px] justify-between ${className}`}>
