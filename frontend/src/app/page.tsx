@@ -25,6 +25,7 @@ import { useProfile } from "@/app/context/ProfileContext";
 import ResponsiveSidebar from "@/components/ui/responsive-sidebar";
 import type { AppSidebarProps } from "@/components/ui/app-sidebar";
 
+
 export default function Home() {
   // global consts do not touch  
   //Devices Profile
@@ -62,7 +63,10 @@ export default function Home() {
   Activity: [],
   Intensity: [],
   Time: [],
-  Other: []
+  Food: [],
+  "H2O Intake":[],
+  "Sleep Quality (1-10)":[],
+  Other: [], 
 });
 const categories: string[] = Object.keys(currentTags);
 
@@ -72,7 +76,10 @@ const allOptions: Record<string, string[]> = {
     Activity: ["Resting", "Walking", "Running", "Cycling"],
     Intensity: ["Low", "Moderate", "High", "Max"],
     Time: ["Morning","Noon","Afternoon","Evening","Night"],
-    Other: ["Test", "Control", "Baseline", "Custom"]
+    Food: [],
+    "H2O Intake": [],
+    "Sleep Quality (1-10)":[],
+    Other: ["Test", "Control", "Baseline", "Custom"],
   };
 
 
@@ -259,169 +266,175 @@ useEffect(() => {
 
   return (
 <SidebarProvider>
-    <div className='flex  w-screen '>
+    <div className='flex w-screen h-screen'>
       <ResponsiveSidebar sidebarProps={sidebarProps}>               
         {/* ——— RIGHT (main) ——— */}
-        <main className="flex-1 flex flex-col overflow-y-auto p-6 gap-6">
-        <div className="flex items-center justify-between">
-            
-  <h2 className="text-2xl font-bold">
-    {isConnected
-      ? (
-        <>Connected to <span className="text-primary">{deviceName || "Unknown Device"}</span></>
-      )
-      : (
-        <>Not connected to <span className="text-muted-foreground">{deviceName || "any device"}</span></>
-      )}
-  </h2>
+        <main className="flex-1  overflow-y-auto  px-4 sm:px-6 py-4">
+        <div className="mx-auto max-w-6xl space-y-5">
+          <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold">
+                {isConnected
+                  ? (
+                    <>Connected to <span className="text-primary">{deviceName || "Unknown Device"}</span></>
+                  )
+                  : (
+                    <>Not connected to <span className="text-muted-foreground">{deviceName || "any device"}</span></>
+                  )}
+              </h2>
 
-          <Button
-              onClick={() => setShowChart(prev => !prev)}
-              className="bg-gray-700 text-white py-2 px-4 border-2 border-gray-700 hover:bg-gray-600 transition-all duration-300"
-            >
-              {showChart ? <Eye/> : <EyeOff/>}
-          </Button>
-        </div>
+              <Button
+                  onClick={() => setShowChart(prev => !prev)}
+                  className="bg-gray-700 text-white py-2 px-4 border-2 border-gray-700 hover:bg-gray-600 transition-all duration-300"
+                >
+                  {showChart ? <Eye/> : <EyeOff/>}
+              </Button>
+             </div>
       
-       {/* ▸ Row 2 – five metric cards */}
-      <div className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-            <DashboardCard
-              title="Heart Rate"
-              value={
-                heartRateValue !== null ? `${heartRateValue} bpm` : "N/A"
-              }
-              icon={HeartPulse}
-              variant="heart"
-            />
-            <DashboardCard
-              title="Pulse Oximetry"
-              value={pulseOximetry !== null ? `${pulseOximetry}%` : "N/A"}
-              icon={Activity}
-              variant="oxygen"
-            />
-            <DashboardCard
-              title="Temperature"
-              value={tempValue !== null ? `${tempValue} °C` : "N/A"}
-              icon={Thermometer}
-              variant="temp"
-            />
-            <DashboardCard
-              title="Relative Humidity"
-              value={
-                relativeHumidity !== null ? `${relativeHumidity}%` : "N/A"
-              }
-              icon={Droplets}
-              variant="humid"
-            />
-            <DashboardCard
-              title="Atmospheric Pressure"
-              value={atmPressure !== null ? `${atmPressure} atm` : "N/A"}
-              icon={GaugeCircle}
-              variant="pressure"
-            />
-          </div>
-
+          {/* ▸ Row 2 – five metric cards */}
+          <div className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+                <DashboardCard
+                  title="Heart Rate"
+                  value={
+                    heartRateValue !== null ? `${heartRateValue} bpm` : "N/A"
+                  }
+                  icon={HeartPulse}
+                  variant="heart"
+                />
+                <DashboardCard
+                  title="Pulse Oximetry"
+                  value={pulseOximetry !== null ? `${pulseOximetry}%` : "N/A"}
+                  icon={Activity}
+                  variant="oxygen"
+                />
+                <DashboardCard
+                  title="Temperature"
+                  value={tempValue !== null ? `${tempValue} °C` : "N/A"}
+                  icon={Thermometer}
+                  variant="temp"
+                />
+                <DashboardCard
+                  title="Relative Humidity"
+                  value={
+                    relativeHumidity !== null ? `${relativeHumidity}%` : "N/A"
+                  }
+                  icon={Droplets}
+                  variant="humid"
+                />
+                <DashboardCard
+                  title="Atmospheric Pressure"
+                  value={atmPressure !== null ? `${atmPressure} atm` : "N/A"}
+                  icon={GaugeCircle}
+                  variant="pressure"
+                />
+              </div>
+          {/* Channel picker */}
          {showChart && sensorData.length > 0 && (
-  <div className="flex flex-wrap items-center gap-4 px-1 pb-2">
-    {/* Label */}
-    <span className="text-sm font-semibold text-muted-foreground">Select Channels:</span>
+          <div className="flex flex-wrap items-center gap-4 px-1 pb-2">
+            {/* Label */}
+            <span className="text-sm font-semibold text-muted-foreground">Select Channels:</span>
 
-    {/* Master checkbox: All */}
-    <label className="flex items-center gap-2 text-sm px-2 py-1 rounded hover:bg-muted transition">
-      <input
-        type="checkbox"
-        checked={selectedChannels.length === detectedChannelCount}
-        onChange={(e) => {
-          const all = Array.from({ length: detectedChannelCount }, (_, i) => i);
-          setSelectedChannels(e.target.checked ? all : []);
-        }}
-        className="accent-primary h-4 w-4"
-      />
-      All
-    </label>
+              {/* Master checkbox: All */}
+              <label className="flex items-center gap-2 text-sm px-2 py-1 rounded hover:bg-muted transition">
+                <input
+                  type="checkbox"
+                  checked={selectedChannels.length === detectedChannelCount}
+                  onChange={(e) => {
+                    const all = Array.from({ length: detectedChannelCount }, (_, i) => i);
+                    setSelectedChannels(e.target.checked ? all : []);
+                  }}
+                  className="accent-primary h-4 w-4"
+                />
+                All
+              </label>
 
-    {/* Individual checkboxes */}
-    {Array.from({ length: detectedChannelCount }, (_, ch) => (
-      <label
-        key={ch}
-        className="flex items-center gap-2 text-sm px-2 py-1 rounded hover:bg-muted transition"
-      >
-        <input
-          type="checkbox"
-          checked={selectedChannels.includes(ch)}
-          onChange={() =>
-            setSelectedChannels((prev) =>
-              prev.includes(ch)
-                ? prev.filter((c) => c !== ch)
-                : [...prev, ch].sort((a, b) => a - b)
-            )
-          }
-          className="accent-primary h-4 w-4"
-        />
-        Ch {ch}
-      </label>
-    ))}
-  </div>
-)}
-
-
+              {/* Individual checkboxes */}
+              {Array.from({ length: detectedChannelCount }, (_, ch) => (
+                <label
+                  key={ch}
+                  className="flex items-center gap-2 text-sm px-2 py-1 rounded hover:bg-muted transition"
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedChannels.includes(ch)}
+                    onChange={() =>
+                      setSelectedChannels((prev) =>
+                        prev.includes(ch)
+                          ? prev.filter((c) => c !== ch)
+                          : [...prev, ch].sort((a, b) => a - b)
+                      )
+                    }
+                    className="accent-primary h-4 w-4"
+                  />
+                  Ch {ch}
+                </label>
+              ))}
+            </div>
+          )}
 
 
-         {showChart && sensorData.length > 0 && (
+
+         
+           {showChart && sensorData.length > 0 && (
             (deviceName === "MIRAS") ? (
               <>
-            {selectedChannels.some((ch) => ch <= 5) && (
-            <Card className="flex-1 flex flex-col  overflow-hidden rounded-2xl border border-border/60 bg-background/70 backdrop-blur shadow-lg">
-              <CardHeader className="p-6">
-                  <CardTitle>Channels 0-2</CardTitle>
-              </CardHeader>
+              {selectedChannels.some((ch) => ch <= 5) && (
+              <Card className="flex-1 flex flex-col  overflow-hidden rounded-2xl border border-border/60 bg-background/70 backdrop-blur shadow-lg">
+                <CardHeader className="p-6">
+                    <CardTitle>Channels 0-2</CardTitle>
+                </CardHeader>
 
-              <CardContent className="flex-1 min-h-0 h-full p-4 pt-0">
-                <HealthChart data={sensorData} 
-                  channels={selectedChannels.filter((ch) => ch <= 2)}
-                />
-              </CardContent>
-            </Card>
-            )}
+                <CardContent className="flex-1 min-h-0 h-full p-4 pt-0">
+                  <HealthChart data={sensorData} 
+                    channels={selectedChannels.filter((ch) => ch <= 2)}
+                  />
+                </CardContent>
+              </Card>
+              )}
 
-            {selectedChannels.some((ch) => ch <= 5) && (
-            <Card className="flex-1 flex flex-col  overflow-hidden rounded-2xl border border-border/60 bg-background/70 backdrop-blur shadow-lg">
-              <CardHeader className="p-6">
-                  <CardTitle>Channels 3-5</CardTitle>
-              </CardHeader>
+              {selectedChannels.some((ch) => ch <= 5) && (
+              <Card className="flex-1 flex flex-col  overflow-hidden rounded-2xl border border-border/60 bg-background/70 backdrop-blur shadow-lg">
+                <CardHeader className="p-6">
+                    <CardTitle>Channels 3-5</CardTitle>
+                </CardHeader>
 
-              <CardContent className="flex-1 min-h-0 h-full p-4 pt-0">
-                <HealthChart data={sensorData} 
-                   channels={selectedChannels.filter((ch) => ch >= 3)}
-                />
-              </CardContent>
-            </Card>
-            )}
-            </>
-            ) : (
-            selectedChannels.length > 0 && (
-            <Card className="flex-1 flex flex-col  overflow-hidden rounded-2xl border border-border/60 bg-background/70 backdrop-blur shadow-lg">
-              <CardHeader className="p-6">
-                  <CardTitle>Channels 0-5</CardTitle>
-              </CardHeader>
+                <CardContent className="flex-1 min-h-0 h-full p-4 pt-0">
+                  <HealthChart data={sensorData} 
+                    channels={selectedChannels.filter((ch) => ch >= 3)}
+                  />
+                </CardContent>
+              </Card>
+              )}
+              </>
+              ) : (
+              selectedChannels.length > 0 && (
+              <Card className="flex-1 flex flex-col  overflow-hidden rounded-2xl border border-border/60 bg-background/70 backdrop-blur shadow-lg">
+                <CardHeader className="p-6">
+                    <CardTitle>Channels 0-5</CardTitle>
+                </CardHeader>
 
-              <CardContent className="flex-1 min-h-0 h-full p-4 pt-0">
-                <HealthChart data={sensorData} 
-                       channels={selectedChannels}
-                />
-              </CardContent>
-            </Card>
+                <CardContent className="flex-1 min-h-0 h-full p-4 pt-0">
+                  <HealthChart data={sensorData} 
+                        channels={selectedChannels}
+                  />
+                </CardContent>
+              </Card>
+              )
             )
-          )
-          )}
-          <div className="mt-6 grid grid-cols-3 gap-6">
-            <div className="col-span-2"></div>
-            <div className="col-span-1">
-              <Card className="flex flex-col h-full overflow-hidden rounded-2xl border border-border/60 bg-background/70 backdrop-blur shadow-lg ">
+            )}
+
+
+          {/* <div className="mt-6 grid grid-cols-3 gap-6"> */}
+            {/* <div className="col-span-2"></div> */}
+            {/* <div className="col-span-1"> */}
+              <Card className="overflow-hidden rounded-2xl border border-border/60 bg-background/70 backdrop-blur shadow-lg ">
                 <CardHeader className="p-4">
                   <CardTitle>Add Tags</CardTitle>
                 </CardHeader>
                 <CardContent className="p-4">
+                  <div className="grid gap-3 sm:grid-cols-2
+                    [&_label]:text-sm
+                    [&_input]:h-10 [&_input]:text-sm
+                    [&_.field]:max-w-sm"> 
                   <TagInputs
                     categories={categories}
                     allOptions={allOptions}
@@ -436,11 +449,12 @@ useEffect(() => {
                       toast.success("Tags applied — all future and queued data now include them.");
                     }}
                   />
+                  </div>
                 </CardContent>
               </Card>
-            </div>
+            {/* </div> */}
+          
           </div>
-
         </main>
         </ResponsiveSidebar>
         </div>

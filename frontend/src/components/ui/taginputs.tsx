@@ -84,7 +84,7 @@ export default function TagInputs({ categories, allOptions, onApply }: TagInputs
 
       <button
         onClick={handleApply}
-        className= "w-full rounded bg-black text-white py-2 px-6 border-2 border-black hover:text-black transition-all duration-300"
+        className= "sm:col-span-2 w-full rounded bg-black text-white py-2 px-6 border-2 border-black hover:text-black transition-all duration-300"
       >
         Apply Tags
       </button>
